@@ -14,8 +14,9 @@ return new class extends Migration
     Schema::create('group_members', function (Blueprint $table) {
         $table->id();
         $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
-        $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
+        $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
         $table->enum('status', ['pending','approved','rejected'])->default('pending');
+        $table->unique(['student_id', 'group_id']);
         $table->timestamps();
     });
 }

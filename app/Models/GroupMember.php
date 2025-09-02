@@ -8,6 +8,8 @@ class GroupMember extends Model
 {
     protected $fillable = ['group_id', 'student_id', 'status']; // pending | approved
 
+    public $timestamps = false; // لو جدول group_members مفيهوش created_at و updated_at
+
     public function group()
     {
         return $this->belongsTo(Group::class);

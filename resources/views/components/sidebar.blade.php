@@ -8,14 +8,14 @@
             <p class="text-sm text-white/80">أستاذ المواد الشرعية</p>
         </div>
         <nav class="mt-6">
-            <a href="#" class="flex items-center px-4 py-3 mt-1 bg-white/10 border-r-4 border-yellow-400">
+            <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 mt-1 bg-white/10 border-r-4 border-yellow-400">
                 <i class="fas fa-home ml-3"></i> لوحة التحكم
             </a>
-            <a href="{{ route('lessons') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-book ml-3"></i> الدروس</a>
-            <a href="{{ route('sessions') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-video ml-3"></i> الحصص</a>
-            <a href="{{ route('groups') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-users ml-3"></i> المجموعات</a>
-            <a href="#" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-file-alt ml-3"></i> الاختبارات</a>
-            <a href="#" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-tasks ml-3"></i> الواجبات</a>
+            <a href="{{ route('lessons.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-book ml-3"></i> الدروس</a>
+            <a href="{{ route('sessions.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-video ml-3"></i> الحصص</a>
+            <a href="{{ route('teacher.groups.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-users ml-3"></i> المجموعات</a>
+            <a href="{{ route('exams.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-file-alt ml-3"></i> الاختبارات</a>
+            <a href="{{ route('assignments.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition"><i class="fas fa-tasks ml-3"></i> الواجبات</a>
         </nav>
     </div>
 </div>

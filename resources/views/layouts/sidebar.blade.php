@@ -19,27 +19,27 @@
                 <span>لوحة التحكم</span>
             </a>
             
-            <a href="{{ route('lessons') }}"class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
+            <a href="{{ route('lessons.index') }}"class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
                 <i class="fas fa-book ml-3"></i>
                 <span>الدروس</span>
             </a>
             
-            <a href="{{ route('sessions') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
+            <a href="{{ route('sessions.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
                 <i class="fas fa-video ml-3"></i>
                 <span>الحصص</span>
             </a>
             
-            <a href="{{ route('groups') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
+            <a href="{{ route('teacher.groups.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
                 <i class="fas fa-users ml-3"></i>
                 <span>المجموعات</span>
             </a>
             
-            <a href="{{ route('exams') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
+            <a href="{{ route('exams.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
                 <i class="fas fa-file-alt ml-3"></i>
                 <span>الاختبارات</span>
             </a>
             
-            <a href="{{ route('assignments') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
+            <a href="{{ route('assignments.index') }}" class="flex items-center px-4 py-3 mt-1 hover:bg-white/10 transition">
                 <i class="fas fa-tasks ml-3"></i>
                 <span>الواجبات</span>
             </a>
