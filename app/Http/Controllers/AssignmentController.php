@@ -185,4 +185,51 @@ public function deleteFile($id, $index)
 
         return redirect()->route('assignments.index')->with('success', 'تم حذف الواجب');
     }
+    // 🟢 الطالب: عرض الواجبات المتاحة له
+public function studentIndex()
+{
+    $studentId = Auth::id();
+
+    $assignments = Assignment::where(function ($q) use ($studentId) {
+            $q->whereHas('lesson.course.enrollments', function ($q2) use ($studentId) {
+                $q2->where('student_id', $studentId)->where('status', 'approved');
+            });
+        })
+        ->orWhere(function ($q) use ($studentId) {
+            $q->whereHas('group.members', function ($q2) use ($studentId) {
+                $q2->where('student_id', $studentId)->where('status', 'approved');
+            });
+        })
+        ->with(['lesson.course', 'group'])
+        ->get();
+
+    return view('student.assignments.index', compact('assignments'));
+}
+
+// 🟢 الطالب: عرض تفاصيل الواجب
+public function studentShow($id)
+{
+    $assignment = Assignment::with('lesson.course', 'group', 'answers')
+        ->findOrFail($id);
+
+    $studentId = Auth::id();
+
+    // هل الطالب مسجل؟
+    $isEnrolled = $assignment->lesson && $assignment->lesson->course->enrollments()
+        ->where('student_id', $studentId)->where('status', 'approved')->exists();
+
+    $inGroup = $assignment->group && $assignment->group->members()
+        ->where('student_id', $studentId)->where('status', 'approved')->exists();
+
+    if (! $isEnrolled && ! $inGroup) {
+        abort(403, 'غير مصرح لك بدخول هذا الواجب');
+    }
+
+    $alreadySubmitted = $assignment->answers()
+        ->where('student_id', $studentId)
+        ->exists();
+
+    return view('student.assignments.show', compact('assignment', 'alreadySubmitted'));
+}
+
 }

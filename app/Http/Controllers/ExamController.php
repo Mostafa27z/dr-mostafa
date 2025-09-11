@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ExamQuestion;
 use App\Models\ExamQuestionOption;
+use App\Models\ExamAnswer;
+use App\Models\ExamResult;
 class ExamController extends Controller
 {
     // 🟢 المدرس: عرض كل الامتحانات اللي عملها
@@ -153,26 +155,33 @@ class ExamController extends Controller
 
     // 🟢 الطالب: عرض الامتحانات المتاحة له
     public function availableExams()
-    {
-        $studentId = Auth::id();
+{
+    $studentId = Auth::id();
 
-        $exams = Exam::where(function ($q) use ($studentId) {
-                $q->whereHas('lesson.course.enrollments', function ($q2) use ($studentId) {
-                    $q2->where('student_id', $studentId)
-                       ->where('status', 'approved');
-                });
-            })
-            ->orWhere(function ($q) use ($studentId) {
-                $q->whereHas('group.members', function ($q2) use ($studentId) {
-                    $q2->where('student_id', $studentId)
-                       ->where('status', 'approved');
-                });
-            })
-            ->with(['lesson.course', 'group'])
-            ->get();
+    $exams = Exam::where(function ($q) use ($studentId) {
+            $q->whereHas('lesson.course.enrollments', function ($q2) use ($studentId) {
+                $q2->where('student_id', $studentId)
+                   ->where('status', 'approved');
+            });
+        })
+        ->orWhere(function ($q) use ($studentId) {
+            $q->whereHas('group.members', function ($q2) use ($studentId) {
+                $q2->where('student_id', $studentId)
+                   ->where('status', 'approved');
+            });
+        })
+        ->with([
+            'lesson.course',
+            'group',
+            'results' => function ($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }
+        ])
+        ->get();
 
-        return view('student.exams.available', compact('exams'));
-    }
+    return view('student.exams.index', compact('exams'));
+}
+
     
 
 public function addQuestion(Request $request, $examId)
@@ -278,5 +287,138 @@ public function quesDestroy($id)
     return redirect()->route('exams.show', $question->exam_id)
                      ->with('success', 'تم حذف السؤال بنجاح');
 }
+// STUDENT Funcs
+// 🟢 الطالب: عرض تفاصيل امتحان
+public function showExam($id)
+{
+    $exam = Exam::with(['lesson.course.enrollments', 'group.members', 'questions.options'])
+        ->findOrFail($id);
+
+    $studentId = Auth::id();
+
+    // التحقق أن الطالب مسجل في الكورس أو عضو في المجموعة
+    $isEnrolled = $exam->lesson && $exam->lesson->course->enrollments()
+        ->where('student_id', $studentId)->where('status', 'approved')->exists();
+
+    $inGroup = $exam->group && $exam->group->members()
+        ->where('student_id', $studentId)->where('status', 'approved')->exists();
+
+    if (! $isEnrolled && ! $inGroup) {
+        abort(403, 'غير مصرح لك بدخول هذا الامتحان');
+    }
+
+    return view('student.exams.show', compact('exam'));
+}
+
+// 🟢 الطالب: بدء الامتحان (عرض الأسئلة + المؤقت)
+public function start($id)
+{
+    $exam = Exam::with('questions.options')->findOrFail($id);
+    $studentId = Auth::id();
+
+    // تحقق من صلاحية الطالب (نفس الشرط اللي فوق)
+    $isEnrolled = $exam->lesson && $exam->lesson->course->enrollments()
+        ->where('student_id', $studentId)->where('status', 'approved')->exists();
+
+    $inGroup = $exam->group && $exam->group->members()
+        ->where('student_id', $studentId)->where('status', 'approved')->exists();
+
+    if (! $isEnrolled && ! $inGroup) {
+        abort(403, 'غير مصرح لك بدخول هذا الامتحان');
+    }
+
+    // منع الطالب من الدخول لو عنده نتيجة مسجلة
+    $alreadyTaken = $exam->results()->where('student_id', $studentId)->exists();
+    if ($alreadyTaken) {
+        return redirect()->route('student.exams.result', $exam->id);
+    }
+
+    return view('student.exams.attempt', compact('exam'));
+}
+
+// 🟢 الطالب: تسليم الإجابات
+public function submit(Request $request, $id)
+{
+    $exam = Exam::with('questions.options')->findOrFail($id);
+    $studentId = Auth::id();
+
+    // منع التكرار: لو الطالب حل الامتحان قبل كده
+    if ($exam->results()->where('student_id', $studentId)->exists()) {
+        return redirect()->route('student.exams.result', $exam->id);
+    }
+
+    $answers = $request->input('answers', []);
+    $totalScore = 0;
+
+    foreach ($exam->questions as $question) {
+        $answerValue = $answers[$question->id] ?? null;
+
+        if (!$answerValue) {
+            // الطالب لم يجب على هذا السؤال
+            ExamAnswer::create([
+                'student_id'       => $studentId,
+                'exam_question_id' => $question->id,
+                'degree'           => 0,
+            ]);
+            continue;
+        }
+
+        // سؤال اختيار من متعدد
+        $chosenOption = $question->options->where('id', $answerValue)->first();
+        $correctOption = $question->options->where('is_correct', 1)->first();
+
+        $isCorrect = $chosenOption && $correctOption && $chosenOption->id == $correctOption->id;
+
+        ExamAnswer::create([
+            'student_id'             => $studentId,
+            'exam_question_id'       => $question->id,
+            'exam_question_option_id'=> $chosenOption?->id,
+            'correct_option_id'      => $correctOption?->id,
+            'degree'                 => $isCorrect ? $question->degree : 0,
+        ]);
+
+        if ($isCorrect) {
+            $totalScore += $question->degree;
+        }
+    }
+
+    // تسجيل النتيجة
+    ExamResult::create([
+        'exam_id'        => $exam->id,
+        'student_id'     => $studentId,
+        'student_degree' => $totalScore,
+    ]);
+
+    return redirect()->route('student.exams.result', $exam->id)
+                     ->with('success', 'تم تسليم الامتحان بنجاح');
+}
+
+
+// 🟢 الطالب: عرض النتيجة
+public function result($id)
+{
+    $exam = Exam::with(['questions.options'])->findOrFail($id);
+
+    $result = $exam->results()
+        ->where('student_id', Auth::id())
+        ->first();
+
+    if (! $result) {
+        abort(403, 'لم تقم بحل هذا الامتحان');
+    }
+
+    // نجيب الإجابات الخاصة بالطالب + السؤال + الاختيارات
+    $answers = ExamAnswer::where('student_id', Auth::id())
+        ->whereIn('exam_question_id', $exam->questions->pluck('id'))
+        ->with([
+            'question.options',  // مهم: يجيب السؤال مع كل الاختيارات
+            'chosenOption',
+            'correctOption'
+        ])
+        ->get();
+
+    return view('student.exams.result', compact('exam', 'result', 'answers'));
+}
+
 
 }

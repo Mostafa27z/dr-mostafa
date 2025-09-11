@@ -114,8 +114,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/answers/{id}', [AssignmentAnswerController::class, 'show'])->name('answers.show');
     Route::put('/answers/{id}', [AssignmentAnswerController::class, 'update'])->name('answers.update');
 });
+// 🟢 واجبات الطالب
+Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+    // قائمة الواجبات
+    Route::get('/assignments', [AssignmentController::class, 'studentIndex'])->name('assignments.index');
 
-// Exams Routes
+    // عرض واجب معين
+    Route::get('/assignments/{id}', [AssignmentController::class, 'studentShow'])->name('assignments.show');
+
+    // تسليم الواجب
+    Route::post('/assignments/{id}/submit', [AssignmentAnswerController::class, 'submit'])->name('assignments.submit');
+
+    // عرض النتيجة
+    Route::get('/assignments/{id}/result', [AssignmentAnswerController::class, 'result'])->name('assignments.result');
+});
+
 // Exams Routes
 Route::middleware(['auth'])->group(function () {
     // الامتحانات
@@ -135,9 +148,32 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/questions/{id}', [ExamController::class, 'quesDestroy'])->name('questions.destroy');
 
     // الطالب
-    Route::get('/student/exams', [ExamController::class, 'availableExams'])->name('student.exams');
+    // Route::get('/student/exams', [ExamController::class, 'availableExams'])->name('student.exams');
 });
 
+// ==========================
+// 🟢 Student Exams Routes
+// ==========================
+Route::middleware(['auth'])->prefix('student')->name('student.exams.')->group(function () {
+
+    // عرض قائمة الامتحانات المتاحة للطالب
+    Route::get('/exams', [ExamController::class, 'availableExams'])->name('index');
+
+    // تفاصيل الامتحان قبل البدء
+    Route::get('/exams/{id}', [ExamController::class, 'showExam'])->name('show');
+
+    // شاشة التعليمات قبل البدء
+    Route::get('/exams/{id}/start', [ExamController::class, 'start'])->name('start');
+
+    // محاولة الامتحان (عرض الأسئلة + المؤقت)
+    Route::get('/exams/{id}/attempt', [ExamController::class, 'start'])->name('attempt');
+
+    // تسليم الامتحان
+    Route::post('/exams/{id}/submit', [ExamController::class, 'submit'])->name('submit');
+
+    // عرض النتيجة
+    Route::get('/exams/{id}/result', [ExamController::class, 'result'])->name('result');
+});
 
 
 // Students Routes

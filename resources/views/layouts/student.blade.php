@@ -146,24 +146,34 @@
 <nav class="mt-6">
     <div class="px-4 py-2 text-xs font-semibold text-primary-300">القائمة الرئيسية</div>
     
-    <a href="{{ route('student.home') }}" class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.home') ? 'active' : '' }}">
+    <a href="{{ route('student.home') }}" 
+       class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.home') ? 'active' : '' }}">
         <i class="fas fa-home ml-3 text-accent-400"></i>
         <span class="font-medium">الرئيسية</span>
     </a>
-
-    <a href="{{ route('student.courses') }}" class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.courses*') ? 'active' : '' }}">
-        <i class="fas fa-book-open ml-3 text-primary-300"></i>
-        <span class="font-medium">الدورات</span>
-    </a>
-
-    <a href="{{ route('student.groups') }}" class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.groups') ? 'active' : '' }}">
+    
+    <a href="{{ route('student.groups') }}" 
+       class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.groups') ? 'active' : '' }}">
         <i class="fas fa-users ml-3 text-primary-300"></i>
         <span class="font-medium">المجموعات</span>
     </a>
-    
-    <a href="{{ route('student.sessions') }}" class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.sessions') ? 'active' : '' }}">
+
+    <a href="{{ route('student.sessions') }}" 
+       class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.sessions') ? 'active' : '' }}">
         <i class="fas fa-video ml-3 text-primary-300"></i>
         <span class="font-medium">الجلسات</span>
+    </a>
+
+    <a href="{{ route('student.exams.index') }}" 
+       class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.exams.*') ? 'active' : '' }}">
+        <i class="fas fa-file-alt ml-3 text-primary-300"></i>
+        <span class="font-medium">الامتحانات</span>
+    </a>
+
+    <a href="{{ route('student.assignments.index') }}" 
+       class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.assignments.*') ? 'active' : '' }}">
+        <i class="fas fa-tasks ml-3 text-primary-300"></i>
+        <span class="font-medium">الواجبات</span>
     </a>
     
     <div class="px-4 py-2 text-xs font-semibold text-primary-300 mt-6 border-t border-white/20 pt-6">الإعدادات</div>
@@ -181,6 +191,8 @@
         </button>
     </form>
 </nav>
+
+
 
             </div>
         </aside>

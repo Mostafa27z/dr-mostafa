@@ -13,8 +13,9 @@ class ExamAnswer extends Model
     ];
 
     public function question() {
-        return $this->belongsTo(ExamQuestion::class);
-    }
+    return $this->belongsTo(ExamQuestion::class, 'exam_question_id');
+}
+
 
     public function chosenOption() {
         return $this->belongsTo(ExamQuestionOption::class, 'exam_question_option_id');
