@@ -12,7 +12,7 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\AssignmentAnswerController;
-use App\Http\Middleware\Role as role;
+// use App\Http\Middleware\Role as role;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,7 +20,7 @@ Route::get('/', function () {
 
 // Dashboard Routes
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/', [DashboardController::class, 'index'])->name('home');
+Route::get('/', [DashboardController::class, 'index'])->name('home')->middleware(['auth', 'role:teacher'])->middleware(['auth', 'role:teacher']);
 
 // Authentication Routes
 Route::middleware('auth')->group(function () {
@@ -31,24 +31,24 @@ Route::middleware('auth')->group(function () {
 
 // Courses Routes
 Route::prefix('courses')->name('courses.')->group(function () {
-    Route::get('/', [CourseController::class, 'index'])->name('index');
-    Route::get('/create', [CourseController::class, 'create'])->name('create');
-    Route::post('/', [CourseController::class, 'store'])->name('store');
-    Route::get('/{course}', [CourseController::class, 'show'])->name('show');
-    Route::get('/{course}/edit', [CourseController::class, 'edit'])->name('edit');
-    Route::put('/{course}', [CourseController::class, 'update'])->name('update');
-    Route::delete('/{course}', [CourseController::class, 'destroy'])->name('destroy');
+    Route::get('/', [CourseController::class, 'index'])->name('index')->middleware(['auth', 'role:teacher']);
+    Route::get('/create', [CourseController::class, 'create'])->name('create')->middleware(['auth', 'role:teacher']);
+    Route::post('/', [CourseController::class, 'store'])->name('store')->middleware(['auth', 'role:teacher'])->middleware(['auth', 'role:teacher']);
+    Route::get('/{course}', [CourseController::class, 'show'])->name('show')->middleware(['auth', 'role:teacher'])->middleware(['auth', 'role:teacher']);
+    Route::get('/{course}/edit', [CourseController::class, 'edit'])->name('edit')->middleware(['auth', 'role:teacher'])->middleware(['auth', 'role:teacher']);
+    Route::put('/{course}', [CourseController::class, 'update'])->name('update')->middleware(['auth', 'role:teacher'])->middleware(['auth', 'role:teacher']);
+    Route::delete('/{course}', [CourseController::class, 'destroy'])->name('destroy')->middleware(['auth', 'role:teacher'])->middleware(['auth', 'role:teacher']);
 });
 
 // Lessons Routes
 Route::prefix('lessons')->name('lessons.')->group(function () {
-    Route::get('/', [LessonController::class, 'index'])->name('index');
-    Route::get('/create', [LessonController::class, 'create'])->name('create');
-    Route::post('/', [LessonController::class, 'store'])->name('store');
-    Route::get('/{lesson}', [LessonController::class, 'show'])->name('show');
-    Route::get('/{lesson}/edit', [LessonController::class, 'edit'])->name('edit');
-    Route::put('/{lesson}', [LessonController::class, 'update'])->name('update');
-    Route::delete('/{lesson}', [LessonController::class, 'destroy'])->name('destroy');
+    Route::get('/', [LessonController::class, 'index'])->name('index')->middleware(['auth', 'role:teacher']);
+    Route::get('/create', [LessonController::class, 'create'])->name('create')->middleware(['auth', 'role:teacher']);
+    Route::post('/', [LessonController::class, 'store'])->name('store')->middleware(['auth', 'role:teacher']);
+    Route::get('/{lesson}', [LessonController::class, 'show'])->name('show')->middleware(['auth', 'role:teacher']);
+    Route::get('/{lesson}/edit', [LessonController::class, 'edit'])->name('edit')->middleware(['auth', 'role:teacher']);
+    Route::put('/{lesson}', [LessonController::class, 'update'])->name('update')->middleware(['auth', 'role:teacher']);
+    Route::delete('/{lesson}', [LessonController::class, 'destroy'])->name('destroy')->middleware(['auth', 'role:teacher']);
 });
 
 
@@ -60,36 +60,36 @@ Route::prefix('lessons')->name('lessons.')->group(function () {
 Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function () {
 
     // Group CRUD operations
-    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
-    Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
-    Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
-    Route::get('/groups/{group}/edit', [GroupController::class, 'edit'])->name('groups.edit');
-    Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
-    Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
-    Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index')->middleware(['auth', 'role:teacher']);
+    Route::post('/groups', [GroupController::class, 'store'])->name('groups.store')->middleware(['auth', 'role:teacher']);
+    Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create')->middleware(['auth', 'role:teacher']);
+    Route::get('/groups/{group}/edit', [GroupController::class, 'edit'])->name('groups.edit')->middleware(['auth', 'role:teacher']);
+    Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update')->middleware(['auth', 'role:teacher']);
+    Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show')->middleware(['auth', 'role:teacher']);
+    Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy')->middleware(['auth', 'role:teacher']);
 
     // Group member management
-    Route::post('/groups/add-student', [GroupController::class, 'addStudent'])->name('groups.add-student');
-    Route::patch('/groups/requests/{groupMember}/approve', [GroupController::class, 'approveRequest'])->name('groups.approve-request');
-    Route::patch('/groups/requests/{groupMember}/reject', [GroupController::class, 'rejectRequest'])->name('groups.reject-request');
-    Route::delete('/groups/{group}/members/{member}', [GroupController::class, 'removeMember'])->name('groups.remove-member');
+    Route::post('/groups/add-student', [GroupController::class, 'addStudent'])->name('groups.add-student')->middleware(['auth', 'role:teacher']);
+    Route::patch('/groups/requests/{groupMember}/approve', [GroupController::class, 'approveRequest'])->name('groups.approve-request')->middleware(['auth', 'role:teacher']);
+    Route::patch('/groups/requests/{groupMember}/reject', [GroupController::class, 'rejectRequest'])->name('groups.reject-request')->middleware(['auth', 'role:teacher']);
+    Route::delete('/groups/{group}/members/{member}', [GroupController::class, 'removeMember'])->name('groups.remove-member')->middleware(['auth', 'role:teacher']);
 
     // Group statistics
-    Route::get('/groups/{group}/stats', [GroupController::class, 'getGroupStats'])->name('groups.stats');
+    Route::get('/groups/{group}/stats', [GroupController::class, 'getGroupStats'])->name('groups.stats')->middleware(['auth', 'role:teacher']);
 
     // AJAX routes
-    Route::get('/groups/search/students', [GroupController::class, 'searchStudents'])->name('groups.search-students');
+    Route::get('/groups/search/students', [GroupController::class, 'searchStudents'])->name('groups.search-students')->middleware(['auth', 'role:teacher']);
 });
 
 
 // Student Group Routes (for joining groups)
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role:student'])->group(function () {
     Route::post('/groups/{group}/join', [GroupController::class, 'joinGroup'])->name('groups.join');
     Route::get('/my-groups', [GroupController::class, 'myGroups'])->name('student.groups');
 });
 
 // Sessions Routes
-Route::prefix('sessions')->name('sessions.')->group(function () {
+Route::prefix('sessions')->middleware(['auth', 'role:teacher'])->name('sessions.')->group(function () {
     Route::get('/', [SessionController::class, 'index'])->name('index');
     Route::get('/create', [SessionController::class, 'create'])->name('create');
     Route::post('/', [SessionController::class, 'store'])->name('store');
@@ -100,7 +100,7 @@ Route::prefix('sessions')->name('sessions.')->group(function () {
 });
 
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role:teacher'])->group(function () {
     // الواجبات
     Route::get('/assignments', [AssignmentController::class, 'index'])->name('assignments.index');
     Route::get('/assignments/create', [AssignmentController::class, 'create'])->name('assignments.create');
@@ -115,7 +115,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/answers/{id}', [AssignmentAnswerController::class, 'update'])->name('answers.update');
 });
 // 🟢 واجبات الطالب
-Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     // قائمة الواجبات
     Route::get('/assignments', [AssignmentController::class, 'studentIndex'])->name('assignments.index');
 
@@ -130,7 +130,7 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
 });
 
 // Exams Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role:teacher'])->group(function () {
     // الامتحانات
     Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');     // عرض كل الامتحانات
     Route::get('/exams/create', [ExamController::class, 'index'])->name('exams.create'); // فورم إنشاء امتحان
@@ -154,7 +154,7 @@ Route::middleware(['auth'])->group(function () {
 // ==========================
 // 🟢 Student Exams Routes
 // ==========================
-Route::middleware(['auth'])->prefix('student')->name('student.exams.')->group(function () {
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.exams.')->group(function () {
 
     // عرض قائمة الامتحانات المتاحة للطالب
     Route::get('/exams', [ExamController::class, 'availableExams'])->name('index');
@@ -177,7 +177,7 @@ Route::middleware(['auth'])->prefix('student')->name('student.exams.')->group(fu
 
 
 // Students Routes
-Route::prefix('students')->name('students.')->group(function () {
+Route::middleware(['auth', 'role:student'])->prefix('students')->name('students.')->group(function () {
     Route::get('/', [StudentController::class, 'index'])->name('index');
     Route::get('/{student}', [StudentController::class, 'show'])->name('show');
     Route::get('/{student}/edit', [StudentController::class, 'edit'])->name('edit');
@@ -186,28 +186,28 @@ Route::prefix('students')->name('students.')->group(function () {
 
 // Enrollments Routes
 Route::prefix('enrollments')->name('enrollments.')->group(function () {
-    Route::get('/', [EnrollmentController::class, 'index'])->name('index');
+    Route::get('/', [EnrollmentController::class, 'index'])->name('index')->middleware(['auth', 'role:teacher']);
     Route::post('/{course}', [EnrollmentController::class, 'store'])->name('store');
-    Route::put('/{enrollment}/approve', [EnrollmentController::class, 'approve'])->name('approve');
-    Route::put('/{enrollment}/reject', [EnrollmentController::class, 'reject'])->name('reject');
-    Route::put('/{enrollment}/complete', [EnrollmentController::class, 'complete'])->name('complete');
-    Route::delete('/{enrollment}', [EnrollmentController::class, 'destroy'])->name('destroy');
+    Route::put('/{enrollment}/approve', [EnrollmentController::class, 'approve'])->name('approve')->middleware(['auth', 'role:teacher']);
+    Route::put('/{enrollment}/reject', [EnrollmentController::class, 'reject'])->name('reject')->middleware(['auth', 'role:teacher']);
+    Route::put('/{enrollment}/complete', [EnrollmentController::class, 'complete'])->name('complete')->middleware(['auth', 'role:teacher']);
+    Route::delete('/{enrollment}', [EnrollmentController::class, 'destroy'])->name('destroy')->middleware(['auth', 'role:teacher']);
 });
 
 
-Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/home', [DashboardController::class, 'home'])->name('home');
     Route::get('/groups', [DashboardController::class, 'groups'])->name('groups');
     Route::get('/sessions', [DashboardController::class, 'sessions'])->name('sessions');
 });
 
-Route::prefix('student')->middleware(['auth'])->group(function () {
+Route::prefix('student')->middleware(['auth', 'role:student'])->group(function () {
     Route::get('/home', [StudentController::class, 'home'])->name('student.home');
     Route::get('/groups', [StudentController::class, 'groups'])->name('student.groups');
     Route::post('/groups/{id}/join', [StudentController::class, 'requestJoin'])->name('student.groups.join');
     Route::get('/sessions', [StudentController::class, 'sessions'])->name('student.sessions');
 });
-Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/courses', [StudentController::class, 'courses'])->name('courses');
     Route::get('/courses/{course}', [StudentController::class, 'showCourse'])->name('courses.show');
      Route::get('/courses/{course}/lessons/{lesson}', [\App\Http\Controllers\StudentController::class, 'showLesson'])->name('lessons.show');
