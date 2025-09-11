@@ -19,14 +19,17 @@
                 <div class="lg:col-span-2">
                     <!-- الفيديو -->
                     @if($lesson->video)
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                        <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
-                            <h5 class="text-white text-xl font-semibold">فيديو الدرس</h5>
+                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                            <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
+                                <h5 class="text-white text-xl font-semibold">فيديو الدرس</h5>
+                            </div>
+                            <div class="p-4">
+                                <video src="{{ $lesson->video_url }}" 
+                                       controls 
+                                       class="w-full rounded-lg" 
+                                       style="max-height: 400px;"></video>
+                            </div>
                         </div>
-                        <div class="p-4">
-                            <video src="{{ Storage::url($lesson->video) }}" controls class="w-full rounded-lg" style="max-height: 400px;"></video>
-                        </div>
-                    </div>
                     @endif
 
                     <!-- الوصف -->
@@ -49,55 +52,57 @@
                         <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
                             <h5 class="text-white text-xl font-semibold">معلومات الدرس</h5>
                         </div>
-                        <div class="p-6">
-                            <div class="space-y-4">
-                                <div>
-                                    <p class="text-sm text-gray-500">الدورة</p>
-                                    <p class="font-medium">{{ $lesson->course->title }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">تاريخ الإنشاء</p>
-                                    <p class="font-medium">{{ $lesson->created_at->format('Y-m-d') }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">آخر تحديث</p>
-                                    <p class="font-medium">{{ $lesson->updated_at->format('Y-m-d') }}</p>
-                                </div>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-500">الدورة</p>
+                                <p class="font-medium">{{ $lesson->course->title }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">تاريخ الإنشاء</p>
+                                <p class="font-medium">{{ $lesson->created_at->format('Y-m-d') }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">آخر تحديث</p>
+                                <p class="font-medium">{{ $lesson->updated_at->format('Y-m-d') }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- الملفات المرفقة -->
-                    @if($lesson->files && is_array($lesson->files) && count($lesson->files) > 0)
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                        <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
-                            <h5 class="text-white text-xl font-semibold">الملفات المرفقة</h5>
-                        </div>
-                        <div class="p-6">
-                            <div class="space-y-3">
+                    @if(!empty($lesson->files) && count($lesson->files) > 0)
+                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                            <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
+                                <h5 class="text-white text-xl font-semibold">الملفات المرفقة</h5>
+                            </div>
+                            <div class="p-6 space-y-3">
                                 @foreach($lesson->files as $file)
-                                <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-file text-sky-500 ml-3"></i>
-                                        <div>
-                                            @if(is_array($file))
-                                                <p class="font-medium">{{ $file['name'] ?? 'ملف غير محدد' }}</p>
-                                                @if(isset($file['size']))
-                                                <p class="text-sm text-gray-500">{{ formatFileSize($file['size']) }}</p>
+                                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file text-sky-500 ml-3"></i>
+                                            <div>
+                                                <p class="font-medium">{{ $file['original_name'] ?? 'ملف غير محدد' }}</p>
+                                                @if(!empty($file['size']))
+                                                    @php
+                                                        $size = $file['size'];
+                                                        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                                                        $power = $size > 0 ? floor(log($size, 1024)) : 0;
+                                                        $formattedSize = number_format($size / pow(1024, $power), 2) . ' ' . $units[$power];
+                                                    @endphp
+                                                    <p class="text-sm text-gray-500">
+                                                        {{ $formattedSize }}
+                                                    </p>
                                                 @endif
-                                            @else
-                                                <p class="font-medium">{{ basename($file) }}</p>
-                                            @endif
+                                            </div>
                                         </div>
+                                        <a href="{{ Storage::url($file['path'] ?? '') }}" 
+                                           download 
+                                           class="text-green-500 hover:text-green-700">
+                                            <i class="fas fa-download"></i>
+                                        </a>
                                     </div>
-                                    <a href="{{ Storage::url(is_array($file) ? ($file['path'] ?? $file['name']) : $file) }}" download class="text-green-500 hover:text-green-700">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                </div>
                                 @endforeach
                             </div>
                         </div>
-                    </div>
                     @endif
 
                     <!-- الإجراءات -->
@@ -105,25 +110,27 @@
                         <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
                             <h5 class="text-white text-xl font-semibold">الإجراءات</h5>
                         </div>
-                        <div class="p-6">
-                            <div class="space-y-3">
-                                <a href="{{ route('lessons.edit', $lesson) }}" class="w-full bg-sky-500 text-white py-2 px-4 rounded-xl hover:bg-sky-600 transition-colors duration-200 flex items-center justify-center">
-                                    <i class="fas fa-edit ml-2"></i>
-                                    تعديل الدرس
-                                </a>
-                                <form action="{{ route('lessons.destroy', $lesson) }}" method="POST" class="w-full">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="w-full bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 transition-colors duration-200 flex items-center justify-center" onclick="return confirm('هل أنت متأكد من حذف هذا الدرس؟')">
-                                        <i class="fas fa-trash ml-2"></i>
-                                        حذف الدرس
-                                    </button>
-                                </form>
-                                <a href="{{ route('lessons.index') }}" class="w-full bg-gray-500 text-white py-2 px-4 rounded-xl hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center">
-                                    <i class="fas fa-arrow-right ml-2"></i>
-                                    العودة للقائمة
-                                </a>
-                            </div>
+                        <div class="p-6 space-y-3">
+                            <a href="{{ route('lessons.edit', $lesson) }}" 
+                               class="w-full bg-sky-500 text-white py-2 px-4 rounded-xl hover:bg-sky-600 transition-colors duration-200 flex items-center justify-center">
+                                <i class="fas fa-edit ml-2"></i>
+                                تعديل الدرس
+                            </a>
+                            <form action="{{ route('lessons.destroy', $lesson) }}" method="POST" class="w-full">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" 
+                                        class="w-full bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 transition-colors duration-200 flex items-center justify-center" 
+                                        onclick="return confirm('هل أنت متأكد من حذف هذا الدرس؟')">
+                                    <i class="fas fa-trash ml-2"></i>
+                                    حذف الدرس
+                                </button>
+                            </form>
+                            <a href="{{ route('lessons.index') }}" 
+                               class="w-full bg-gray-500 text-white py-2 px-4 rounded-xl hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center">
+                                <i class="fas fa-arrow-right ml-2"></i>
+                                العودة للقائمة
+                            </a>
                         </div>
                     </div>
                 </div>

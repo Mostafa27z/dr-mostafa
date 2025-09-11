@@ -13,14 +13,28 @@ class Lesson extends Model
         'title',
         'description',
         'video',
+        'video_name',
+        'video_size',
+        'video_duration',
         'files',
         'course_id',
+        'order',
+        'is_free',
+        'status',
+        'published_at',
     ];
 
     protected $casts = [
         'files' => 'array',
+        'is_free' => 'boolean',
+        'published_at' => 'datetime',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
     public function course()
     {
         return $this->belongsTo(Course::class);
@@ -36,33 +50,35 @@ class Lesson extends Model
         return $this->hasMany(Exam::class);
     }
 
-    public function getFilesAttribute($value)
-    {
-        return $value ? json_decode($value, true) : [];
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors
+    |--------------------------------------------------------------------------
+    */
 
-    public function setFilesAttribute($value)
-    {
-        $this->attributes['files'] = is_array($value) ? json_encode($value) : $value;
-    }
-
+    // رابط الفيديو
     public function getVideoUrlAttribute()
     {
         return $this->video ? asset('storage/' . $this->video) : null;
     }
 
+    // روابط الملفات
     public function getFileUrlsAttribute()
     {
-        $files = $this->files;
-        if (!is_array($files)) return [];
-        
-        return array_map(function($file) {
+        if (!is_array($this->files)) {
+            return [];
+        }
+
+        return array_map(function ($file) {
             return [
-                'name' => $file['name'],
-                'url' => asset('storage/' . $file['path']),
-                'size' => $file['size'],
-                'type' => $file['type']
+                'original_name' => $file['original_name'] ?? null,
+                'stored_name'   => $file['stored_name'] ?? null,
+                'url'           => isset($file['path']) ? asset('storage/' . $file['path']) : null,
+                'size'          => $file['size'] ?? null,
+                'type'          => $file['type'] ?? null,
+                'extension'     => $file['extension'] ?? null,
+                'uploaded_at'   => $file['uploaded_at'] ?? null,
             ];
-        }, $files);
+        }, $this->files);
     }
 }

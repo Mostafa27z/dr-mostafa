@@ -28,7 +28,19 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = Auth::user();
+
+        // ✅ تحويل المستخدم حسب الدور
+        if ($user->role === 'teacher') {
+            return redirect()->route('dashboard');
+        }
+
+        if ($user->role === 'student') {
+            return redirect()->route('student.home');
+        }
+
+        // fallback لو مفيش role مطابق
+        return redirect()->route('home');
     }
 
     /**
@@ -42,6 +54,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login');
     }
 }

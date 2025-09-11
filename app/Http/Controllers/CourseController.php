@@ -53,18 +53,31 @@ class CourseController extends Controller
     }
 
     public function show(Course $course)
-    {
-        // Check if the course belongs to the authenticated teacher
-        if ($course->teacher_id !== Auth::id()) {
-            abort(403);
-        }
-
-        $course->load(['lessons' => function($query) {
-            $query->orderBy('created_at');
-        }, 'enrollments.student']);
-
-        return view('courses.show', compact('course'));
+{
+    // Ensure only the course owner (teacher) can access
+    if ($course->teacher_id !== Auth::id()) {
+        abort(403);
     }
+
+    // Load relationships
+    $course->load([
+        'lessons' => function ($query) {
+            $query->orderBy('created_at');
+        },
+        'enrollments.student'
+    ]);
+
+    // Pre-calculate some useful stats for the view
+    $stats = [
+        'total_lessons'   => $course->total_lessons,
+        'total_students'  => $course->total_students,
+        'pending_requests'=> $course->pending_enrollments,
+        'price'           => $course->formatted_price,
+    ];
+
+    return view('courses.show', compact('course', 'stats'));
+}
+
 
     public function edit(Course $course)
     {
@@ -77,37 +90,43 @@ class CourseController extends Controller
     }
 
     public function update(Request $request, Course $course)
-    {
-        // Check if the course belongs to the authenticated teacher
-        if ($course->teacher_id !== Auth::id()) {
-            abort(403);
-        }
-
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-        ]);
-
-        $course->title = $request->title;
-        $course->description = $request->description;
-        $course->price = $request->price;
-
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($course->image) {
-                Storage::disk('public')->delete($course->image);
-            }
-            $imagePath = $request->file('image')->store('courses', 'public');
-            $course->image = $imagePath;
-        }
-
-        $course->save();
-
-        return redirect()->route('courses.index')->with('success', 'تم تحديث الدورة بنجاح');
+{
+    if ($course->teacher_id !== Auth::id()) {
+        abort(403);
     }
+
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+    ]);
+
+    $course->title = $request->title;
+    $course->description = $request->description;
+    $course->price = $request->price;
+
+    // حذف الصورة لو الطالب اختار "remove_image"
+    if ($request->filled('remove_image')) {
+        if ($course->image) {
+            Storage::disk('public')->delete($course->image);
+        }
+        $course->image = null;
+    }
+
+    // رفع صورة جديدة
+    if ($request->hasFile('image')) {
+        if ($course->image) {
+            Storage::disk('public')->delete($course->image);
+        }
+        $imagePath = $request->file('image')->store('courses', 'public');
+        $course->image = $imagePath;
+    }
+
+    $course->save();
+
+    return redirect()->route('courses.index')->with('success', 'تم تحديث الدورة بنجاح');
+}
 
     public function destroy(Course $course)
     {

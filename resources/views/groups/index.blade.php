@@ -188,7 +188,7 @@
                                             </div>
                                             @if($group->price > 0)
                                                 <div class="mt-2 text-sm text-green-600 font-medium">
-                                                    السعر: {{ number_format($group->price, 2) }} جنيه
+                                                    السعر: {{ $group->price, 2 }} جنيه
                                                 </div>
                                             @endif
                                         </div>
@@ -245,7 +245,7 @@
                                                         <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">{{ $request->group->title }}</span>
                                                     </td>
                                                     <td class="px-4 py-3">
-                                                        <div class="text-sm text-gray-500">{{ $request->created_at->format('d/m/Y') }}</div>
+                                                        <div class="text-sm text-gray-500">{{ $request->created_at }}</div>
                                                     </td>
                                                     <td class="px-4 py-3">
                                                         <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
@@ -350,42 +350,7 @@
             </div>
         </div>
     </div>
-{{-- 
-    <style>
-        .modal {
-            transition: all 0.3s ease;
-        }
-        .modal-content {
-            border: none;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .btn-close {
-            background: none;
-            border: none;
-            font-size: 1.25rem;
-            opacity: 0.7;
-            transition: opacity 0.2s ease;
-        }
-        .btn-close:hover {
-            opacity: 1;
-        }
-        .file-upload {
-            border: 2px dashed #d1d5db;
-            border-radius: 0.75rem;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .file-upload:hover {
-            border-color: #10b981;
-            background-color: #ecfdf5;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
---}}
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // تأثيرات عند التمرير على بطاقات المجموعات

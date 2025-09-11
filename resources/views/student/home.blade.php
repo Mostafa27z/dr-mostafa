@@ -180,7 +180,7 @@
             <i class="fas fa-globe ml-2 text-primary-500"></i>
             مجموعات متاحة للانضمام
         </h2>
-        <div class="flex gap-2">
+        {{-- <div class="flex gap-2">
             <select class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 <option>جميع المراحل</option>
                 <option>الصف الرابع</option>
@@ -193,7 +193,7 @@
                 <option>العلوم</option>
                 <option>اللغة العربية</option>
             </select>
-        </div>
+        </div> --}}
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -215,7 +215,7 @@
                 <i class="fas fa-users ml-1"></i>
                 <span class="ml-3">{{ $group->members_count }}/{{ $group->max_students ?? '∞' }} طالب</span>
             </div>
-            <form method="POST" action="{{ route('student.request-join', $group->id) }}">
+            <form method="POST" action="{{ route('student.groups.join', $group->id) }}">
                 @csrf
                 <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition text-sm">
                     <i class="fas fa-plus ml-1"></i>

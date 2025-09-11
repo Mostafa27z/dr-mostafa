@@ -68,10 +68,7 @@
             border-right: 4px solid #fbbf24;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        /* تحسينات الاستجابة */
-        .sidebar {
-            display: block;
-        }
+        .sidebar { display: block; }
         
         @media (max-width: 1024px) {
             .sidebar { width: 240px; }
@@ -102,47 +99,22 @@
                 backdrop-filter: blur(2px);
             }
             .overlay.active { display: block; }
-            
-            /* تحسين النص والأيقونات للجوال */
-            .nav-link { 
-                padding: 12px 16px; 
-                font-size: 16px;
-            }
-            .nav-link i { 
-                font-size: 18px; 
-                margin-left: 12px; 
-            }
+            .nav-link { padding: 12px 16px; font-size: 16px; }
+            .nav-link i { font-size: 18px; margin-left: 12px; }
         }
         
         @media (max-width: 640px) {
             .sidebar { width: 100vw; }
             main { padding: 1rem; }
-            
-            /* تحسين الشريط العلوي للجوال */
             nav .max-w-7xl { padding: 0 1rem; }
             nav h1, nav span { font-size: 16px; }
-            
-            /* تحسين المحتوى للشاشات الصغيرة */
-            .notification-badge { 
-                height: 18px; 
-                width: 18px; 
-                font-size: 10px; 
-            }
+            .notification-badge { height: 18px; width: 18px; font-size: 10px; }
         }
         
         @media (max-width: 480px) {
-            /* للشاشات الصغيرة جداً */
-            nav .flex.justify-between > div:last-child span {
-                display: none;
-            }
-            
-            .sidebar {
-                width: 100vw;
-            }
-            
-            main {
-                padding: 0.75rem;
-            }
+            nav .flex.justify-between > div:last-child span { display: none; }
+            .sidebar { width: 100vw; }
+            main { padding: 0.75rem; }
         }
         .notification-badge {
             animation: pulse 2s infinite;
@@ -152,6 +124,9 @@
             50% { opacity: 0.7; }
         }
     </style>
+
+    {{-- سكشن للستايلات الإضافية --}}
+    @yield('styles')
 </head>
 <body class="antialiased bg-primary-50 text-gray-800 overflow-x-hidden">
     <div class="min-h-screen flex">
@@ -168,44 +143,45 @@
                 </div>
                 
                 <!-- قائمة التنقل -->
-                <nav class="mt-6">
-                    <div class="px-4 py-2 text-xs font-semibold text-primary-300">القائمة الرئيسية</div>
-                    
-                    <a href="{{ route('student.home') }}" class="nav-link active flex items-center px-4 py-3 mx-2">
-                        <i class="fas fa-home ml-3 text-accent-400"></i>
-                        <span class="font-medium">الرئيسية</span>
-                    </a>
-                    
-                    <a href="{{ route('student.groups') }}" class="nav-link flex items-center px-4 py-3 mx-2">
-                        <i class="fas fa-users ml-3 text-primary-300"></i>
-                        <span class="font-medium">المجموعات</span>
-                    </a>
-                    
-                    <a href="{{ route('student.sessions') }}" class="nav-link flex items-center px-4 py-3 mx-2">
-                        <i class="fas fa-video ml-3 text-primary-300"></i>
-                        <span class="font-medium">الجلسات</span>
-                    </a>
-                    
-                    {{-- <a href="#" class="nav-link flex items-center px-4 py-3 mx-2">
-                        <i class="fas fa-tasks ml-3 text-primary-300"></i>
-                        <span class="font-medium">الواجبات</span>
-                    </a>
-                     --}}
-                    <div class="px-4 py-2 text-xs font-semibold text-primary-300 mt-6 border-t border-white/20 pt-6">الإعدادات</div>
-                    
-                    <a href="#" class="nav-link flex items-center px-4 py-3 mx-2">
-                        <i class="fas fa-cog ml-3 text-primary-300"></i>
-                        <span class="font-medium">الإعدادات</span>
-                    </a>
-                    
-                    <form method="POST" action="{{ route('logout') }}" class="mt-6">
-                        @csrf
-                        <button type="submit" class="nav-link flex items-center w-full px-4 py-3 mx-2 text-red-300 hover:text-red-200 hover:bg-red-500/20">
-                            <i class="fas fa-sign-out-alt ml-3"></i>
-                            <span class="font-medium">تسجيل الخروج</span>
-                        </button>
-                    </form>
-                </nav>
+<nav class="mt-6">
+    <div class="px-4 py-2 text-xs font-semibold text-primary-300">القائمة الرئيسية</div>
+    
+    <a href="{{ route('student.home') }}" class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.home') ? 'active' : '' }}">
+        <i class="fas fa-home ml-3 text-accent-400"></i>
+        <span class="font-medium">الرئيسية</span>
+    </a>
+
+    <a href="{{ route('student.courses') }}" class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.courses*') ? 'active' : '' }}">
+        <i class="fas fa-book-open ml-3 text-primary-300"></i>
+        <span class="font-medium">الدورات</span>
+    </a>
+
+    <a href="{{ route('student.groups') }}" class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.groups') ? 'active' : '' }}">
+        <i class="fas fa-users ml-3 text-primary-300"></i>
+        <span class="font-medium">المجموعات</span>
+    </a>
+    
+    <a href="{{ route('student.sessions') }}" class="nav-link flex items-center px-4 py-3 mx-2 {{ request()->routeIs('student.sessions') ? 'active' : '' }}">
+        <i class="fas fa-video ml-3 text-primary-300"></i>
+        <span class="font-medium">الجلسات</span>
+    </a>
+    
+    <div class="px-4 py-2 text-xs font-semibold text-primary-300 mt-6 border-t border-white/20 pt-6">الإعدادات</div>
+    
+    <a href="#" class="nav-link flex items-center px-4 py-3 mx-2">
+        <i class="fas fa-cog ml-3 text-primary-300"></i>
+        <span class="font-medium">الإعدادات</span>
+    </a>
+    
+    <form method="POST" action="{{ route('logout') }}" class="mt-6">
+        @csrf
+        <button type="submit" class="nav-link flex items-center w-full px-4 py-3 mx-2 text-red-300 hover:text-red-200 hover:bg-red-500/20">
+            <i class="fas fa-sign-out-alt ml-3"></i>
+            <span class="font-medium">تسجيل الخروج</span>
+        </button>
+    </form>
+</nav>
+
             </div>
         </aside>
 
@@ -286,5 +262,8 @@
             });
         });
     </script>
+
+    {{-- سكشن للسكربتات الإضافية --}}
+    @yield('scripts')
 </body>
 </html>

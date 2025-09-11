@@ -26,7 +26,7 @@
                 <h5 class="text-white text-xl font-semibold">تفاصيل المجموعة</h5>
             </div>
             <div class="p-6">
-                <form action="{{ route('groups.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('teacher.groups.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="space-y-4">
                         <div>

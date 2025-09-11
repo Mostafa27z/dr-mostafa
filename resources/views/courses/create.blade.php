@@ -24,47 +24,65 @@
                         @csrf
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- عنوان الدورة -->
                             <div class="md:col-span-2">
                                 <label class="block text-gray-700 mb-2 font-medium">عنوان الدورة *</label>
-                                <input type="text" name="title" value="{{ old('title') }}" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" placeholder="أدخل عنوان الدورة" required>
+                                <input type="text" name="title" value="{{ old('title') }}" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" 
+                                       placeholder="أدخل عنوان الدورة" required>
                                 @error('title')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             
+                            <!-- وصف الدورة -->
                             <div class="md:col-span-2">
                                 <label class="block text-gray-700 mb-2 font-medium">وصف الدورة</label>
-                                <textarea name="description" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" placeholder="أدخل وصف الدورة">{{ old('description') }}</textarea>
+                                <textarea name="description" rows="4" 
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" 
+                                          placeholder="أدخل وصف الدورة">{{ old('description') }}</textarea>
                                 @error('description')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             
+                            <!-- سعر الدورة -->
                             <div>
-                                <label class="block text-gray-700 mb-2 font-medium">سعر الدورة (ريال) *</label>
-                                <input type="number" name="price" value="{{ old('price') }}" step="0.01" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" placeholder="0.00" required>
+                                <label class="block text-gray-700 mb-2 font-medium">سعر الدورة (جنيه) *</label>
+                                <input type="number" name="price" value="{{ old('price') }}" step="0.01" min="0" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" 
+                                       placeholder="0.00" required>
                                 @error('price')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             
+                            <!-- صورة الدورة -->
                             <div>
-                                <label class="block text-gray-700 mb-2 font-medium">صورة الدورة</label>
-                                <div class="file-upload-area" id="image-upload-area">
+                                <label for="image-input" 
+                                       class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 hover:bg-gray-50 transition text-center">
                                     <i class="fas fa-image text-3xl text-gray-400 mb-3"></i>
-                                    <p class="text-gray-500">اسحب وأفلت الصورة هنا أو انقر للاختيار</p>
+                                    <p class="text-gray-500">اسحب وأفلت الصورة هنا أو اضغط للاختيار</p>
                                     <p class="text-sm text-gray-400 mt-1">JPG, PNG, GIF (الحجم الأقصى: 5MB)</p>
-                                    <input type="file" name="image" id="image-input" class="hidden" accept="image/jpeg,image/png,image/gif">
-                                    <div id="image-preview" class="hidden mt-4"></div>
-                                </div>
+                                </label>
+                                <input type="file" name="image" id="image-input" class="hidden" accept="image/jpeg,image/png,image/gif">
+                                
+                                <!-- مكان المعاينة -->
+                                <div id="image-preview" class="mt-4 hidden"></div>
+                                
                                 @error('image')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             
+                            <!-- الأزرار -->
                             <div class="md:col-span-2 flex justify-end space-x-3 space-x-reverse">
-                                <a href="{{ route('courses.index') }}" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition-colors duration-200">إلغاء</a>
-                                <button type="submit" class="px-6 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors duration-200 flex items-center">
+                                <a href="{{ route('courses.index') }}" 
+                                   class="px-6 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition-colors duration-200">
+                                   إلغاء
+                                </a>
+                                <button type="submit" 
+                                        class="px-6 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors duration-200 flex items-center">
                                     <i class="fas fa-save ml-2"></i>
                                     حفظ الدورة
                                 </button>
@@ -78,34 +96,17 @@
 
     @push('scripts')
     <script>
-        // إدارة تحميل الصورة
-        const imageUploadArea = document.getElementById('image-upload-area');
         const imageInput = document.getElementById('image-input');
         const imagePreview = document.getElementById('image-preview');
 
-        imageUploadArea.addEventListener('click', () => imageInput.click());
-        imageUploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            imageUploadArea.classList.add('border-2', 'border-purple-500', 'bg-purple-50');
-        });
-        imageUploadArea.addEventListener('dragleave', () => {
-            imageUploadArea.classList.remove('border-2', 'border-purple-500', 'bg-purple-50');
-        });
-        imageUploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            imageUploadArea.classList.remove('border-2', 'border-purple-500', 'bg-purple-50');
-            if (e.dataTransfer.files.length) {
-                imageInput.files = e.dataTransfer.files;
-                handleImagePreview(e.dataTransfer.files[0]);
-            }
-        });
-
+        // عند اختيار صورة
         imageInput.addEventListener('change', (e) => {
             if (e.target.files.length) {
                 handleImagePreview(e.target.files[0]);
             }
         });
 
+        // عرض المعاينة
         function handleImagePreview(file) {
             if (file.type.startsWith('image/')) {
                 const url = URL.createObjectURL(file);
@@ -120,6 +121,7 @@
             }
         }
 
+        // دالة لحجم الملف
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;

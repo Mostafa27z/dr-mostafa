@@ -36,6 +36,17 @@ class CourseEnrollment extends Model
     {
         return $this->belongsTo(User::class, 'student_id');
     }
+    public function lessons()
+    {
+        return $this->hasManyThrough(
+            Lesson::class,   // الموديل النهائي
+            Course::class,   // الموديل الوسيط
+            'id',            // مفتاح الكورس في جدول الكورسات
+            'course_id',     // المفتاح الأجنبي في جدول الدروس
+            'course_id',     // المفتاح في جدول الإنرولمنت
+            'id'             // المفتاح الأساسي للكورس
+        );
+    }
 
     public function scopePending($query)
     {

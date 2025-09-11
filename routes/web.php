@@ -11,6 +11,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\EnrollmentController;
+use App\Http\Controllers\AssignmentAnswerController;
 use App\Http\Middleware\Role as role;
 
 Route::get('/', function () {
@@ -82,7 +83,7 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
 
 
 // Student Group Routes (for joining groups)
-Route::middleware(['auth', 'role:student'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::post('/groups/{group}/join', [GroupController::class, 'joinGroup'])->name('groups.join');
     Route::get('/my-groups', [GroupController::class, 'myGroups'])->name('student.groups');
 });
@@ -98,37 +99,46 @@ Route::prefix('sessions')->name('sessions.')->group(function () {
     Route::delete('/{session}', [SessionController::class, 'destroy'])->name('destroy');
 });
 
-// Assignments Routes
-Route::prefix('assignments')->name('assignments.')->group(function () {
-    Route::get('/', [AssignmentController::class, 'index'])->name('index');
-    Route::get('/create', [AssignmentController::class, 'create'])->name('create');
-    Route::post('/', [AssignmentController::class, 'store'])->name('store');
-    Route::get('/{assignment}', [AssignmentController::class, 'show'])->name('show');
-    Route::get('/{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
-    Route::put('/{assignment}', [AssignmentController::class, 'update'])->name('update');
-    Route::delete('/{assignment}', [AssignmentController::class, 'destroy'])->name('destroy');
-    
-    // Assignment Answers Routes
-    Route::get('/{assignment}/answers', [AssignmentController::class, 'answers'])->name('answers');
-    Route::get('/answers/{answer}/grade', [AssignmentController::class, 'showGrade'])->name('answers.grade');
-    Route::post('/answers/{answer}/grade', [AssignmentController::class, 'grade'])->name('answers.submit-grade');
+
+Route::middleware(['auth'])->group(function () {
+    // الواجبات
+    Route::get('/assignments', [AssignmentController::class, 'index'])->name('assignments.index');
+    Route::get('/assignments/create', [AssignmentController::class, 'create'])->name('assignments.create');
+    Route::post('/assignments', [AssignmentController::class, 'store'])->name('assignments.store');
+    Route::get('/assignments/{id}', [AssignmentController::class, 'show'])->name('assignments.show');
+    Route::get('/assignments/{id}/edit', [AssignmentController::class, 'edit'])->name('assignments.edit');
+    Route::put('/assignments/{id}', [AssignmentController::class, 'update'])->name('assignments.update');
+    Route::delete('/assignments/{id}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
+    Route::delete('/assignments/{id}/files/{index}', [AssignmentController::class, 'deleteFile'])
+    ->name('assignments.deleteFile');
+    Route::get('/answers/{id}', [AssignmentAnswerController::class, 'show'])->name('answers.show');
+    Route::put('/answers/{id}', [AssignmentAnswerController::class, 'update'])->name('answers.update');
 });
 
 // Exams Routes
-Route::prefix('exams')->name('exams.')->group(function () {
-    Route::get('/', [ExamController::class, 'index'])->name('index');
-    Route::get('/create', [ExamController::class, 'create'])->name('create');
-    Route::post('/', [ExamController::class, 'store'])->name('store');
-    Route::get('/{exam}', [ExamController::class, 'show'])->name('show');
-    Route::get('/{exam}/edit', [ExamController::class, 'edit'])->name('edit');
-    Route::put('/{exam}', [ExamController::class, 'update'])->name('update');
-    Route::delete('/{exam}', [ExamController::class, 'destroy'])->name('destroy');
-    
-    // Exam Questions Routes
-    Route::get('/{exam}/questions', [ExamController::class, 'questions'])->name('questions');
-    Route::post('/{exam}/questions', [ExamController::class, 'storeQuestion'])->name('questions.store');
-    Route::delete('/questions/{question}', [ExamController::class, 'destroyQuestion'])->name('questions.destroy');
+// Exams Routes
+Route::middleware(['auth'])->group(function () {
+    // الامتحانات
+    Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');     // عرض كل الامتحانات
+    Route::get('/exams/create', [ExamController::class, 'index'])->name('exams.create'); // فورم إنشاء امتحان
+    Route::post('/exams', [ExamController::class, 'store'])->name('exams.store');   // حفظ امتحان جديد
+
+    Route::get('/exams/{id}', [ExamController::class, 'show'])->name('exams.show'); // عرض امتحان
+    Route::get('/exams/{id}/edit', [ExamController::class, 'edit'])->name('exams.edit'); // تعديل امتحان
+    Route::put('/exams/{id}', [ExamController::class, 'update'])->name('exams.update');  // تحديث امتحان
+    Route::delete('/exams/{id}', [ExamController::class, 'destroy'])->name('exams.destroy'); // حذف امتحان
+
+    // الأسئلة
+    Route::post('/exams/{exam}/add-question', [ExamController::class, 'addQuestion'])->name('exams.addQuestion');
+    Route::get('/questions/{id}/edit', [ExamController::class, 'quesEdit'])->name('questions.edit');
+    Route::put('/questions/{id}', [ExamController::class, 'quesUpdate'])->name('questions.update');
+    Route::delete('/questions/{id}', [ExamController::class, 'quesDestroy'])->name('questions.destroy');
+
+    // الطالب
+    Route::get('/student/exams', [ExamController::class, 'availableExams'])->name('student.exams');
 });
+
+
 
 // Students Routes
 Route::prefix('students')->name('students.')->group(function () {
@@ -161,5 +171,13 @@ Route::prefix('student')->middleware(['auth'])->group(function () {
     Route::post('/groups/{id}/join', [StudentController::class, 'requestJoin'])->name('student.groups.join');
     Route::get('/sessions', [StudentController::class, 'sessions'])->name('student.sessions');
 });
-
+Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+    Route::get('/courses', [StudentController::class, 'courses'])->name('courses');
+    Route::get('/courses/{course}', [StudentController::class, 'showCourse'])->name('courses.show');
+     Route::get('/courses/{course}/lessons/{lesson}', [\App\Http\Controllers\StudentController::class, 'showLesson'])->name('lessons.show');
+});
+Route::middleware(['auth'])->group(function () {
+    Route::get('/lessons/{lesson}/video', [LessonController::class, 'streamVideo'])
+        ->name('lessons.video');
+});
 require __DIR__.'/auth.php';

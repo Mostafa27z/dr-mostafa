@@ -169,4 +169,73 @@ public function sessions()
 
     return view('student.sessions', compact('sessions'));
 }
+public function courses(Request $request)
+{
+    $student = Auth::user();
+
+    // كورسات مسجل فيها الطالب (مقبولة فقط)
+    $enrolledCourses = $student->enrollments()
+        ->where('status', 'approved') // أو whatever الحالة اللي بتستخدمها للقبول
+        ->with(['course.teacher'])
+        ->with(['course' => function($q) {
+            $q->withCount('lessons');
+        }])
+        ->whereHas('course', function($q) use ($request) {
+            if ($search = $request->search_enrolled) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            }
+        })
+        ->paginate(6, ['*'], 'enrolled_page');
+
+    // كورسات في انتظار الموافقة
+    $pendingCourses = $student->enrollments()
+        ->where('status', 'pending')
+        ->with(['course.teacher'])
+        ->with(['course' => function($q) {
+            $q->withCount('lessons');
+        }])
+        ->paginate(6, ['*'], 'pending_page');
+
+    // الكورسات المتاحة (غير مسجل فيها خالص)
+    $availableCourses = \App\Models\Course::with(['teacher'])
+        ->withCount('lessons')
+        ->whereDoesntHave('enrollments', function($q) use ($student) {
+            $q->where('student_id', $student->id);
+        })
+        ->when($request->search_available, function($q, $search) {
+            $q->where('title', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        })
+        ->paginate(6, ['*'], 'available_page');
+
+    return view('student.courses.index', compact('enrolledCourses', 'pendingCourses', 'availableCourses'));
+}
+
+public function showCourse($id)
+{
+    $student = Auth::user();
+
+    $course = \App\Models\Course::with(['lessons', 'teacher'])
+        ->whereHas('enrollments', fn($q) => $q->where('student_id', $student->id))
+        ->findOrFail($id);
+
+    return view('student.courses.show', compact('course'));
+}
+public function showLesson($courseId, $lessonId)
+{
+    $student = Auth::user();
+
+    // نجيب الكورس اللي الطالب مسجل فيه
+    $course = \App\Models\Course::whereHas('enrollments', fn($q) => 
+        $q->where('student_id', $student->id)
+    )->findOrFail($courseId);
+
+    // نجيب الدرس اللي تبع الكورس
+    $lesson = $course->lessons()->findOrFail($lessonId);
+
+    return view('student.lessons.show', compact('course', 'lesson'));
+}
+
+
 }
