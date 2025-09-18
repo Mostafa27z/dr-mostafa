@@ -68,10 +68,10 @@ public function create(Request $request)
             $videoName = time() . '_' . Str::random(10) . '.' . $video->getClientOriginalExtension();
             
             // Store video in lessons/videos directory
-            $videoPath = $video->storeAs('lessons/videos', $videoName, 'public');
+            Storage::disk('bunnycdn')->put("lessons/videos/{$videoName}", fopen($video, 'r+'));
             
             // Store additional video metadata
-            $lesson->video = $videoPath;
+            $lesson->video = 'lessons/videos/' . $videoName;
             $lesson->video_name = $video->getClientOriginalName();
             $lesson->video_size = $video->getSize();
             $lesson->video_duration = $this->getVideoDuration($video->getRealPath()); // Optional
@@ -334,14 +334,15 @@ public function uploadProgress(Request $request)
         if ($request->hasFile('video')) {
             // حذف الفيديو القديم
             if ($lesson->video) {
-                Storage::disk('public')->delete($lesson->video);
+                Storage::disk('bunnycdn')->delete($lesson->video);
             }
 
             $video = $request->file('video');
             $videoName = time() . '_' . Str::random(10) . '.' . $video->getClientOriginalExtension();
-            $videoPath = $video->storeAs('lessons/videos', $videoName, 'public');
 
-            $lesson->video = $videoPath;
+            Storage::disk('bunnycdn')->put("lessons/videos/{$videoName}", fopen($video, 'r+'));
+
+            $lesson->video = 'lessons/videos/' . $videoName;
             $lesson->video_name = $video->getClientOriginalName();
             $lesson->video_size = $video->getSize();
             $lesson->video_duration = $this->getVideoDuration($video->getRealPath()); // optional
@@ -415,7 +416,7 @@ public function uploadProgress(Request $request)
 
     // ✅ حذف الفيديو المرتبط
     if (!empty($lesson->video)) {
-        Storage::disk('public')->delete($lesson->video);
+        Storage::disk('bunnycdn')->delete($lesson->video);
     }
 
     // ✅ حذف الملفات المرتبطة
