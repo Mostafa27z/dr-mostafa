@@ -49,17 +49,7 @@
     </div>
 </div>
 
-<?php 
-include(app_path('Providers/url_signing.php'));
-$url = sign_bcdn_url('lessons/videos/1758172642_1yoA2dzdtG.mp4');
-echo $url;
-?>
 
-<!-- الجلسات القادمة -->
- <video width="800" controls>
-    <source src="{{ url('/video/1758172642_1yoA2dzdtG.mp4')  }}" type="video/mp4">
-    Your browser does not support video playback.
-  </video>
 <div class="mb-8">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-2 md:mb-0 flex items-center">

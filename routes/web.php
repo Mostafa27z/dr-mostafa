@@ -12,6 +12,7 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\AssignmentAnswerController;
+use App\Http\Controllers\VideoController;
 // use App\Http\Middleware\Role as role;
 
 Route::get('/', function () {
@@ -52,33 +53,9 @@ Route::prefix('lessons')->name('lessons.')->group(function () {
 });
 
 // Video Streaming Route
-Route::get('/video/{filename}', function ($filename) {
-    include(app_path('Providers/url_signing.php'));
-    require_once app_path('Providers/url_signing.php');
-    
-    $signedUrl = sign_bcdn_url("lessons/videos/{$filename}");
-
-    // Make request to BunnyCDN
-    $response = Http::withOptions(['stream' => true])->get($signedUrl);
-
-    if ($response->failed()) {
-        abort(403, 'Video not accessible');
-    }
-
-    // Stream BunnyCDN video to client
-    return Response::stream(function () use ($response) {
-        $body = $response->toPsrResponse()->getBody();
-        while (!$body->eof()) {
-            echo $body->read(1024 * 8); // 8KB chunks
-            ob_flush();
-            flush();
-        }
-    }, 200, [
-        "Content-Type" => "video/mp4",
-        "Cache-Control" => "no-cache",
-        "Accept-Ranges" => "bytes",
-    ]);
-});
+Route::get('/video/{path}', [VideoController::class, 'stream'])
+    ->middleware('auth')
+    ->where('path', '.*');
 
 // Teacher Group Management Routes
 Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function () {
