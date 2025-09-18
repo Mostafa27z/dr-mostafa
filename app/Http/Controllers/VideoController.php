@@ -100,7 +100,7 @@ class VideoController extends Controller
     public function stream($path, Request $request)
     {
         
-        $secureURL = $this->sign_bcdn_url($path);
+        $secureUrl = $this->sign_bcdn_url($path);
                 
         // Get video headers first
         $headers = get_headers($secureUrl, 1);
