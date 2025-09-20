@@ -105,10 +105,10 @@
                                         <i class="fas fa-calendar text-primary-500 ml-2"></i>
                                         <span>{{ $group->sessions_count ?? 0 }} جلسة</span>
                                     </div>
-                                    <div class="flex items-center text-sm text-gray-600">
+                                    {{-- <div class="flex items-center text-sm text-gray-600">
                                         <i class="fas fa-book text-primary-500 ml-2"></i>
                                         <span>{{ $group->subject ?? 'غير محدد' }}</span>
-                                    </div>
+                                    </div> --}}
                                     <div class="flex items-center text-sm text-gray-600">
                                         <i class="fas fa-star text-accent-500 ml-2"></i>
                                         <span>{{ $group->rating ?? '4.5' }} تقييم</span>
@@ -116,7 +116,7 @@
                                 </div>
                                 
                                 <!-- أزرار العمل -->
-                                <div class="flex flex-col sm:flex-row gap-3">
+                                {{-- <div class="flex flex-col sm:flex-row gap-3">
                                     <a href="#" class="flex-1 bg-gradient-to-l from-primary-500 to-primary-600 text-white text-center py-3 px-4 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
                                         <i class="fas fa-sign-in-alt ml-2"></i>
                                         دخول المجموعة
@@ -125,7 +125,7 @@
                                         <i class="fas fa-info-circle ml-2"></i>
                                         التفاصيل
                                     </button>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                     @endforeach

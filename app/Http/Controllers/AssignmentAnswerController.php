@@ -10,7 +10,7 @@ class AssignmentAnswerController extends Controller
     public function show($id)
     {
         $answer = AssignmentAnswer::with('student', 'assignment')->findOrFail($id);
-        return view('teacher.assignments.answers.show', compact('answer'));
+        return view('assignments.answers.show', compact('answer'));
     }
 
     public function update(Request $request, $id)

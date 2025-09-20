@@ -8,7 +8,8 @@
 
     <div class="flex justify-between items-center mb-6">
         <p class="text-gray-600">{{ $exam->description }}</p>
-        @include('student.exams.partials.timer', ['duration' => $exam->duration * 60])
+        {{-- 🕒 مكون العداد --}}
+        @include('student.exams.partials.timer', ['duration' => $duration])
     </div>
 
     <form id="exam-form" method="POST" action="{{ route('student.exams.submit', $exam->id) }}">

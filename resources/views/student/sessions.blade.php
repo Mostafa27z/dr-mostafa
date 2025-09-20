@@ -232,7 +232,7 @@
                         <th class="px-4 md:px-6 py-4 text-sm font-semibold text-gray-700">المعلم</th>
                         <th class="px-4 md:px-6 py-4 text-sm font-semibold text-gray-700">التاريخ</th>
                         <th class="px-4 md:px-6 py-4 text-sm font-semibold text-gray-700">المدة</th>
-                        <th class="px-4 md:px-6 py-4 text-sm font-semibold text-gray-700">الإجراءات</th>
+                        {{-- <th class="px-4 md:px-6 py-4 text-sm font-semibold text-gray-700">الإجراءات</th> --}}
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -244,13 +244,13 @@
                             {{ $session->time->translatedFormat('d M Y - h:i A') }}
                         </td>
                         <td class="px-4 md:px-6 py-4 text-sm text-gray-600">60 دقيقة</td>
-                        <td class="px-4 md:px-6 py-4 text-sm">
-                            {{-- زر مشاهدة التسجيل يتنفذ بعدين --}}
+                        {{-- <td class="px-4 md:px-6 py-4 text-sm">
+                            
                             <button class="text-primary-600 hover:text-primary-800 font-medium">
                                 <i class="fas fa-play ml-1"></i>
                                 مشاهدة التسجيل
                             </button>
-                        </td>
+                        </td> --}}
                     </tr>
                     @endforeach
                 </tbody>

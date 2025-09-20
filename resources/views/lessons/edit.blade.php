@@ -1,149 +1,188 @@
+{{-- resources/views/lessons/edit.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white leading-tight">
+        <h2 class="font-semibold text-xl text-white leading-tight flex items-center">
             <i class="fas fa-edit ml-2"></i>
             تعديل الدرس: {{ $lesson->title }}
         </h2>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-6">
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
-                    <h5 class="text-white text-xl font-semibold">معلومات الدرس</h5>
-                </div>
-                <div class="p-6">
-                    <form action="{{ route('lessons.update', $lesson) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-
-                        <!-- العنوان -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">عنوان الدرس *</label>
-                            <input type="text" name="title" value="{{ old('title', $lesson->title) }}"
-                                   class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-sky-500" required>
-                        </div>
-
-                        <!-- الوصف -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">وصف الدرس</label>
-                            <textarea name="description" rows="3"
-                                      class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-sky-500">{{ old('description', $lesson->description) }}</textarea>
-                        </div>
-
-                        <!-- الدورة -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">الدورة *</label>
-                            <select name="course_id"
-                                    class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-sky-500" required>
-                                <option value="">اختر الدورة</option>
-                                @foreach($courses as $course)
-                                    <option value="{{ $course->id }}" {{ old('course_id', $lesson->course_id) == $course->id ? 'selected' : '' }}>
-                                        {{ $course->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- الفيديو الحالي -->
-                        @if($lesson->video)
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">الفيديو الحالي</label>
-                            <video src="{{ Storage::url($lesson->video) }}" controls class="w-full rounded-lg" style="max-height:200px;"></video>
-                            <p class="text-sm text-gray-600 mt-1">
-                                {{ $lesson->video_name }} ({{ number_format($lesson->video_size/1024/1024,2) }} MB) - مدة: {{ $lesson->video_duration ?? 'غير محددة' }}
-                            </p>
-                            <label class="flex items-center mt-2">
-                                <input type="checkbox" name="remove_video" value="1" class="rounded text-red-600">
-                                <span class="ml-2 text-sm text-red-600">حذف الفيديو الحالي</span>
-                            </label>
-                        </div>
-                        @endif
-
-                        <!-- رفع فيديو جديد -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">@if($lesson->video) استبدال الفيديو @else فيديو الدرس @endif</label>
-                            <input type="file" name="video" accept="video/mp4,video/avi,video/quicktime"
-                                   class="block w-full border rounded-xl px-4 py-2">
-                        </div>
-
-                        <!-- الملفات الحالية -->
-                        @if($lesson->files && is_array($lesson->files))
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">الملفات الحالية</label>
-                            <div class="space-y-2">
-                                @foreach($lesson->files as $index => $file)
-                                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
-                                        <div>
-                                            <p class="font-medium">{{ $file['original_name'] ?? 'ملف' }}</p>
-                                            <p class="text-sm text-gray-500">{{ number_format(($file['size'] ?? 0)/1024,2) }} KB</p>
-                                        </div>
-                                        <div class="flex items-center space-x-3 space-x-reverse">
-                                            <a href="{{ Storage::url($file['path']) }}" download class="text-green-500 hover:text-green-700">
-                                                <i class="fas fa-download"></i>
-                                            </a>
-                                            <label class="flex items-center">
-                                                <input type="checkbox" name="remove_files[]" value="{{ $index }}" class="rounded text-red-600">
-                                                <span class="ml-1 text-sm text-red-600">حذف</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- رفع ملفات جديدة -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">إضافة ملفات جديدة</label>
-                            <input type="file" name="files[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx"
-                                   class="block w-full border rounded-xl px-4 py-2">
-                        </div>
-
-                        <!-- الحقول الإضافية -->
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-gray-700 mb-2 font-medium">الترتيب</label>
-                                <input type="number" name="order" value="{{ old('order', $lesson->order) }}"
-                                       class="w-full px-4 py-2 border rounded-xl">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 mb-2 font-medium">مجاني؟</label>
-                                <select name="is_free" class="w-full px-4 py-2 border rounded-xl">
-                                    <option value="0" {{ old('is_free', $lesson->is_free) == 0 ? 'selected' : '' }}>لا</option>
-                                    <option value="1" {{ old('is_free', $lesson->is_free) == 1 ? 'selected' : '' }}>نعم</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">الحالة</label>
-                            <select name="status" class="w-full px-4 py-2 border rounded-xl">
-                                <option value="draft" {{ old('status', $lesson->status) == 'draft' ? 'selected' : '' }}>مسودة</option>
-                                <option value="published" {{ old('status', $lesson->status) == 'published' ? 'selected' : '' }}>منشور</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-gray-700 mb-2 font-medium">تاريخ النشر</label>
-                            <input type="datetime-local" name="published_at"
-                                   value="{{ old('published_at', $lesson->published_at ? $lesson->published_at->format('Y-m-d\TH:i') : '') }}"
-                                   class="w-full px-4 py-2 border rounded-xl">
-                        </div>
-
-                        <!-- الأزرار -->
-                        <div class="flex justify-end space-x-3 space-x-reverse">
-                            <a href="{{ route('lessons.index') }}"
-                               class="px-6 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400">إلغاء</a>
-                            <button type="submit"
-                                    class="px-6 py-2 bg-sky-500 text-white rounded-xl hover:bg-sky-600 flex items-center">
-                                <i class="fas fa-save ml-2"></i>
-                                تحديث الدرس
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    <div class="p-6">
+        <div class="max-w-5xl mx-auto">
+            <!-- عنوان الصفحة -->
+            <div class="bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-2xl shadow-md p-6 mb-6">
+                <h1 class="text-2xl font-bold mb-1">تعديل الدرس</h1>
+                <p class="text-sm opacity-90">يمكنك تعديل بيانات الدرس أو رفع ملفات وفيديو جديد</p>
             </div>
+
+            <!-- الفورم -->
+            <form action="{{ route('lessons.update', $lesson->id) }}" 
+                  method="POST" enctype="multipart/form-data" id="lesson-form"
+                  class="bg-white rounded-2xl shadow-md p-6 space-y-6">
+                @csrf
+                @method('PUT')
+
+                <!-- عنوان الدرس -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">عنوان الدرس *</label>
+                    <input type="text" name="title" value="{{ old('title', $lesson->title) }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
+                           placeholder="أدخل عنوان الدرس" required>
+                    @error('title')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- وصف الدرس -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">وصف الدرس</label>
+                    <textarea name="description" rows="3"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
+                              placeholder="أدخل وصف الدرس">{{ old('description', $lesson->description) }}</textarea>
+                    @error('description')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- اختيار الدورة -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">اختر الدورة *</label>
+                    <select name="course_id"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
+                            required>
+                        <option value="">اختر الدورة</option>
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}" 
+                                {{ old('course_id', $lesson->course_id) == $course->id ? 'selected' : '' }}>
+                                {{ $course->title }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('course_id')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- الفيديو الحالي -->
+                @if($lesson->video_url)
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">الفيديو الحالي</label>
+                        <video controls class="rounded-xl w-full max-w-lg">
+                            <source src="{{ $lesson->video_url }}" type="video/mp4">
+                            متصفحك لا يدعم تشغيل الفيديو
+                        </video>
+                    </div>
+                @endif
+
+                <!-- رفع فيديو جديد -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">استبدال الفيديو</label>
+                    <input type="file" name="video" accept="video/mp4,video/avi,video/quicktime"
+                           class="block w-full text-gray-700 border border-gray-300 rounded-xl cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition">
+                    <p class="text-sm text-gray-500 mt-1">MP4, AVI, MOV (الحد الأقصى: 500MB)</p>
+                    @error('video')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- الملفات الحالية -->
+                @if($lesson->file_urls && count($lesson->file_urls))
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">الملفات الحالية</label>
+                        <ul class="list-disc pr-6 text-sm text-gray-600">
+                            @foreach($lesson->file_urls as $file)
+                                <li>
+                                    <a href="{{ $file['url'] }}" target="_blank" class="text-sky-600 hover:underline">
+                                        {{ $file['original_name'] }}
+                                    </a> ({{ number_format($file['size']/1024/1024, 2) }} MB)
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <!-- رفع ملفات جديدة -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">استبدال الملفات</label>
+                    <input type="file" name="files[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx"
+                           class="block w-full text-gray-700 border border-gray-300 rounded-xl cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition">
+                    <p class="text-sm text-gray-500 mt-1">PDF, DOC, PPT (الحد الأقصى: 50MB لكل ملف)</p>
+                    @error('files.*')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- شريط التقدم -->
+                <div id="upload-progress" class="hidden">
+                    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                        <div id="progress-bar" class="bg-yellow-500 h-4 rounded-full text-xs text-center text-white" style="width:0%">0%</div>
+                    </div>
+                    <p id="progress-text" class="text-sm text-gray-600">جاري الرفع...</p>
+                </div>
+
+                <!-- الأزرار -->
+                <div class="flex justify-end space-x-3 space-x-reverse">
+                    <a href="{{ route('lessons.index') }}"
+                       class="px-6 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition">
+                        إلغاء
+                    </a>
+                    <button type="submit" id="submit-btn"
+                            class="px-6 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition flex items-center">
+                        <i class="fas fa-save ml-2"></i>
+                        تحديث الدرس
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+    document.getElementById('lesson-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // منع الإرسال التقليدي
+
+        const form = e.target;
+        const url = form.action;
+        const formData = new FormData(form);
+
+        const progressDiv = document.getElementById('upload-progress');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // إظهار شريط التقدم
+        progressDiv.classList.remove('hidden');
+        progressBar.style.width = "0%";
+        progressText.innerText = "جاري الرفع...";
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الحفظ...';
+
+        axios.post(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'X-HTTP-Method-Override': 'PUT'
+            },
+            onUploadProgress: function(progressEvent) {
+                if (progressEvent.lengthComputable) {
+                    let percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    progressBar.style.width = percent + "%";
+                    progressBar.innerText = percent + "%";
+                    progressText.innerText = "جاري الرفع... " + percent + "%";
+                }
+            }
+        })
+        .then(function (response) {
+            window.location.href = "{{ route('lessons.index') }}";
+        })
+        .catch(function (error) {
+            alert("حدث خطأ أثناء تحديث الدرس. حاول مرة أخرى.");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save ml-2"></i> تحديث الدرس';
+            progressDiv.classList.add('hidden');
+        });
+    });
+    </script>
+    @endpush
 </x-app-layout>

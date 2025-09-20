@@ -45,7 +45,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('dashboard', compact('stats', 'recent_courses', 'new_students', 'assignments_to_grade'));
+        return view('teacher.dashboard', compact('stats', 'recent_courses', 'new_students', 'assignments_to_grade'));
     }
      public function home()
     {

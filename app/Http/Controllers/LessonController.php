@@ -32,101 +32,62 @@ public function create(Request $request)
     return view('lessons.create', compact('courses', 'selectedCourseId'));
 }
 
-  public function store(Request $request)
-{
-    // Validate the request
-    $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string|max:2000',
-        'course_id' => 'required|exists:courses,id',
-        'video' => 'nullable|file|mimes:mp4,avi,mov|max:512000', // 500MB
-        'files' => 'nullable|array|max:10', // Max 10 files
-        'files.*' => 'file|max:51200|mimes:pdf,doc,docx,ppt,pptx', // 50MB each
-    ]);
 
-    try {
-        DB::beginTransaction();
+    public function store(Request $request)
+    {
+        // ✅ 1. Validation
+        $request->validate([
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'course_id'   => 'required|exists:courses,id',
+            'video'       => 'nullable|file|mimes:mp4,avi,mov|max:512000', // 500MB
+            'files.*'     => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx|max:51200', // 50MB لكل ملف
+        ]);
 
-        // Ensure course belongs to the authenticated teacher
-        $course = Course::where('id', $request->course_id)
-                       ->where('teacher_id', Auth::id())
-                       ->firstOrFail();
+        // ✅ 2. إعداد البيانات
+        $data = $request->only(['title', 'description', 'course_id']);
 
-        // Create new lesson instance
-        $lesson = new Lesson();
-        $lesson->title = $request->title;
-        $lesson->description = $request->description;
-        $lesson->course_id = $request->course_id;
-        $lesson->teacher_id = Auth::id(); // If you have this field
-        $lesson->status = 'active'; // If you have this field
-
-        // Handle video upload
+        // ✅ 3. رفع الفيديو إن وجد
         if ($request->hasFile('video')) {
             $video = $request->file('video');
-            
-            // Generate unique filename
-            $videoName = time() . '_' . Str::random(10) . '.' . $video->getClientOriginalExtension();
-            
-            // Store video in lessons/videos directory
-            $videoPath = $video->storeAs('lessons/videos', $videoName, 'public');
-            
-            // Store additional video metadata
-            $lesson->video = $videoPath;
-            $lesson->video_name = $video->getClientOriginalName();
-            $lesson->video_size = $video->getSize();
-            $lesson->video_duration = $this->getVideoDuration($video->getRealPath()); // Optional
+
+            $path = $video->store('lessons/videos', 'public');
+
+            $data['video']        = $path;
+            $data['video_name']   = $video->getClientOriginalName();
+            $data['video_size']   = $video->getSize();
+            $data['video_duration'] = null; // ممكن تضيف مكتبة لحساب مدة الفيديو
         }
 
-        // Handle multiple file uploads
-        $uploadedFiles = [];
+        // ✅ 4. رفع الملفات المرفقة إن وجدت
+        $filesData = [];
         if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $index => $file) {
-                // Generate unique filename
-                $fileName = time() . '_' . $index . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
-                
-                // Store file in lessons/files directory
-                $filePath = $file->storeAs('lessons/files', $fileName, 'public');
-                
-                // Add file metadata to array
-                $uploadedFiles[] = [
+            foreach ($request->file('files') as $file) {
+                $storedPath = $file->store('lessons/files', 'public');
+
+                $filesData[] = [
                     'original_name' => $file->getClientOriginalName(),
-                    'stored_name' => $fileName,
-                    'path' => $filePath,
-                    'size' => $file->getSize(),
-                    'type' => $file->getClientMimeType(),
-                    'extension' => $file->getClientOriginalExtension(),
-                    'uploaded_at' => now()->toDateTimeString(),
+                    'stored_name'   => basename($storedPath),
+                    'path'          => $storedPath,
+                    'size'          => $file->getSize(),
+                    'type'          => $file->getMimeType(),
+                    'extension'     => $file->getClientOriginalExtension(),
+                    'uploaded_at'   => now(),
                 ];
             }
         }
-        
-        // Store files metadata as JSON
-        $lesson->files = json_encode($uploadedFiles);
 
-        // Save the lesson
-        $lesson->save();
+        $data['files'] = $filesData;
 
-        DB::commit();
+        // ✅ 5. إنشاء الدرس
+        Lesson::create($data);
 
+        // ✅ 6. رجوع مع رسالة نجاح
         return redirect()
             ->route('lessons.index')
-            ->with('success', 'تم إنشاء الدرس بنجاح! تم رفع ' . count($uploadedFiles) . ' ملف' . ($lesson->video ? ' وفيديو واحد' : ''));
-
-    } catch (Exception $e) {
-        DB::rollback();
-        
-        // Log the error
-        Log::error('Error creating lesson: ' . $e->getMessage(), [
-            'user_id' => Auth::id(),
-            'request_data' => $request->except(['video', 'files']) // Don't log file data
-        ]);
-
-        return redirect()
-            ->back()
-            ->withInput()
-            ->withErrors(['error' => 'حدث خطأ أثناء إنشاء الدرس. يرجى المحاولة مرة أخرى.']);
+            ->with('success', 'تمت إضافة الدرس بنجاح');
     }
-}
+
 public function streamVideo(Request $request, Lesson $lesson)
     {
         // -- اختياري: تحقق صلاحية المستخدم هنا --
@@ -293,117 +254,63 @@ public function uploadProgress(Request $request)
         return view('lessons.edit', compact('lesson', 'courses'));
     }
 
-    public function update(Request $request, Lesson $lesson)
+   public function update(Request $request, Lesson $lesson)
 {
-    // تحقق أن الدرس يخص المدرس الحالي
-    if ($lesson->course->teacher_id !== Auth::id()) {
-        abort(403);
-    }
-
-    $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string|max:2000',
-        'course_id' => 'required|exists:courses,id',
-        'video' => 'nullable|file|mimes:mp4,avi,mov|max:512000', // 500MB
-        'files' => 'nullable|array|max:10',
-        'files.*' => 'file|max:51200|mimes:pdf,doc,docx,ppt,pptx',
-        'order' => 'nullable|integer|min:0',
-        'is_free' => 'nullable|boolean',
-        'status' => 'nullable|string|in:active,draft',
-        'published_at' => 'nullable|date',
+    $validated = $request->validate([
+        'title'       => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'course_id'   => 'required|exists:courses,id',
+        'video'       => 'nullable|file|mimes:mp4,avi,mov|max:512000', // 500MB
+        'files.*'     => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx|max:51200', // 50MB
     ]);
 
-    try {
-        DB::beginTransaction();
-
-        // تأكد أن الكورس يخص المدرس الحالي
-        $course = Course::where('id', $request->course_id)
-            ->where('teacher_id', Auth::id())
-            ->firstOrFail();
-
-        // تحديث البيانات الأساسية
-        $lesson->title = $request->title;
-        $lesson->description = $request->description;
-        $lesson->course_id = $request->course_id;
-        $lesson->order = $request->order ?? $lesson->order;
-        $lesson->is_free = $request->is_free ?? 0;
-        $lesson->status = $request->status ?? 'active';
-        $lesson->published_at = $request->published_at;
-
-        // 🔹 التعامل مع الفيديو
-        if ($request->hasFile('video')) {
-            // حذف الفيديو القديم
-            if ($lesson->video) {
-                Storage::disk('public')->delete($lesson->video);
-            }
-
-            $video = $request->file('video');
-            $videoName = time() . '_' . Str::random(10) . '.' . $video->getClientOriginalExtension();
-            $videoPath = $video->storeAs('lessons/videos', $videoName, 'public');
-
-            $lesson->video = $videoPath;
-            $lesson->video_name = $video->getClientOriginalName();
-            $lesson->video_size = $video->getSize();
-            $lesson->video_duration = $this->getVideoDuration($video->getRealPath()); // optional
+    // ✅ تحديث الفيديو إذا تم رفع فيديو جديد
+    if ($request->hasFile('video')) {
+        if ($lesson->video && \Storage::disk('public')->exists($lesson->video)) {
+            \Storage::disk('public')->delete($lesson->video);
         }
 
-        // 🔹 التعامل مع الملفات
-        // لو الـ Model عامل cast → array ، لو مش عامل → JSON string
-        $existingFiles = is_array($lesson->files)
-            ? $lesson->files
-            : ($lesson->files ? json_decode($lesson->files, true) : []);
+        $videoPath = $request->file('video')->store('lessons/videos', 'public');
 
-        $uploadedFiles = [];
-
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $index => $file) {
-                $fileName = time() . '_' . $index . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs('lessons/files', $fileName, 'public');
-
-                $uploadedFiles[] = [
-                    'original_name' => $file->getClientOriginalName(),
-                    'stored_name'   => $fileName,
-                    'path'          => $filePath,
-                    'size'          => $file->getSize(),
-                    'type'          => $file->getClientMimeType(),
-                    'extension'     => $file->getClientOriginalExtension(),
-                    'uploaded_at'   => now()->toDateTimeString(),
-                ];
-            }
-        }
-
-        // دمج القديم مع الجديد
-        $mergedFiles = array_merge($existingFiles, $uploadedFiles);
-
-        // احفظ دايمًا كـ JSON string (أفضل في DB)
-        $lesson->files = json_encode($mergedFiles);
-
-        $lesson->save();
-
-        DB::commit();
-
-        return redirect()
-            ->route('lessons.index')
-            ->with('success', 'تم تحديث الدرس بنجاح! ' .
-                (count($uploadedFiles) ? 'تم رفع ' . count($uploadedFiles) . ' ملف جديد' : '') .
-                ($request->hasFile('video') ? ' مع فيديو جديد' : '')
-            );
-
-    } catch (Exception $e) {
-        DB::rollBack();
-
-        Log::error('Error updating lesson: ' . $e->getMessage(), [
-            'user_id' => Auth::id(),
-            'lesson_id' => $lesson->id,
-            'request_data' => $request->except(['video', 'files']),
-        ]);
-
-        return redirect()
-            ->back()
-            ->withInput()
-            ->withErrors(['error' => 'حدث خطأ أثناء تحديث الدرس. يرجى المحاولة مرة أخرى.']);
+        $validated['video']       = $videoPath;
+        $validated['video_name']  = $request->file('video')->getClientOriginalName();
+        $validated['video_size']  = $request->file('video')->getSize();
+        $validated['video_duration'] = null; // ممكن تضيف مكتبة لحساب مدة الفيديو
     }
+
+    // ✅ تحديث الملفات إذا تم رفع ملفات جديدة
+    if ($request->hasFile('files')) {
+        // احذف الملفات القديمة لو فيه
+        if (is_array($lesson->files)) {
+            foreach ($lesson->files as $file) {
+                if (isset($file['path']) && \Storage::disk('public')->exists($file['path'])) {
+                    \Storage::disk('public')->delete($file['path']);
+                }
+            }
+        }
+
+        $filesData = [];
+        foreach ($request->file('files') as $file) {
+            $path = $file->store('lessons/files', 'public');
+            $filesData[] = [
+                'original_name' => $file->getClientOriginalName(),
+                'stored_name'   => basename($path),
+                'path'          => $path,
+                'size'          => $file->getSize(),
+                'type'          => $file->getMimeType(),
+                'extension'     => $file->getClientOriginalExtension(),
+                'uploaded_at'   => now(),
+            ];
+        }
+        $validated['files'] = $filesData;
+    }
+
+    // ✅ حفظ التحديثات
+    $lesson->update($validated);
+
+    return redirect()->route('lessons.index')->with('success', 'تم تحديث الدرس بنجاح');
 }
+
 
 
     public function destroy(Lesson $lesson)

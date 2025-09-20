@@ -10,6 +10,8 @@ use App\Models\ExamQuestion;
 use App\Models\ExamQuestionOption;
 use App\Models\ExamAnswer;
 use App\Models\ExamResult;
+use App\Models\ExamAttempt;
+use Carbon\Carbon;
 class ExamController extends Controller
 {
     // 🟢 المدرس: عرض كل الامتحانات اللي عملها
@@ -24,7 +26,7 @@ class ExamController extends Controller
 
     $exams = $query->get();
 
-    $now = now();
+    $now = now()->addHours(3);
 
     $upcomingExams = $exams->filter(fn($exam) => $exam->start_time && $exam->start_time > $now);
     $recentExams   = $exams->filter(fn($exam) =>
@@ -39,7 +41,7 @@ class ExamController extends Controller
 
     $groups = \App\Models\Group::where('teacher_id', Auth::id())->get();
 
-    return view('teacher.exams.index', compact('upcomingExams', 'recentExams', 'pastExams', 'lessons', 'groups'));
+    return view('exams.index', compact('upcomingExams', 'recentExams', 'pastExams', 'lessons', 'groups'));
 }
 
 
@@ -52,7 +54,7 @@ class ExamController extends Controller
             ->whereHas('course', fn($q) => $q->where('teacher_id', Auth::id()))
             ->get();
 
-        return view('teacher.exams.create', compact('lessons'));
+        return view('exams.create', compact('lessons'));
     }
 
     // 🟢 المدرس: حفظ امتحان جديد
@@ -88,7 +90,7 @@ class ExamController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        return view('teacher.exams.show', compact('exam'));
+        return view('exams.show', compact('exam'));
     }
 
     // 🟢 المدرس: صفحة تعديل امتحان
@@ -108,7 +110,7 @@ class ExamController extends Controller
 
     $groups = \App\Models\Group::where('teacher_id', Auth::id())->get();
 
-    return view('teacher.exams.edit', compact('exam', 'lessons', 'groups'));
+    return view('exams.edit', compact('exam', 'lessons', 'groups'));
 }
 
 
@@ -154,7 +156,7 @@ class ExamController extends Controller
     }
 
     // 🟢 الطالب: عرض الامتحانات المتاحة له
-    public function availableExams()
+   public function availableExams()
 {
     $studentId = Auth::id();
 
@@ -181,6 +183,7 @@ class ExamController extends Controller
 
     return view('student.exams.index', compact('exams'));
 }
+
 
     
 
@@ -230,7 +233,7 @@ public function quesEdit($id)
         abort(403, 'غير مصرح لك');
     }
 
-    return view('teacher.exams.edit-question', compact('question'));
+    return view('exams.edit-question', compact('question'));
 }
 
 // 🔹 تحديث السؤال
@@ -311,88 +314,213 @@ public function showExam($id)
 }
 
 // 🟢 الطالب: بدء الامتحان (عرض الأسئلة + المؤقت)
+// public function start($id)
+// {
+//     $exam = Exam::with('questions.options')->findOrFail($id);
+//     $studentId = Auth::id();
+
+//     // تحقق من صلاحية الطالب (نفس الشرط اللي فوق)
+//     $isEnrolled = $exam->lesson && $exam->lesson->course->enrollments()
+//         ->where('student_id', $studentId)->where('status', 'approved')->exists();
+
+//     $inGroup = $exam->group && $exam->group->members()
+//         ->where('student_id', $studentId)->where('status', 'approved')->exists();
+
+//     if (! $isEnrolled && ! $inGroup) {
+//         abort(403, 'غير مصرح لك بدخول هذا الامتحان');
+//     }
+
+//     // منع الطالب من الدخول لو عنده نتيجة مسجلة
+//     $alreadyTaken = $exam->results()->where('student_id', $studentId)->exists();
+//     if ($alreadyTaken) {
+//         return redirect()->route('student.exams.result', $exam->id);
+//     }
+
+//     return view('student.exams.attempt', compact('exam'));
+// }
+
+// app/Http/Controllers/Student/ExamController.php
+
 public function start($id)
 {
-    $exam = Exam::with('questions.options')->findOrFail($id);
-    $studentId = Auth::id();
+    $exam = Exam::findOrFail($id);
+    $student = auth()->user();
 
-    // تحقق من صلاحية الطالب (نفس الشرط اللي فوق)
-    $isEnrolled = $exam->lesson && $exam->lesson->course->enrollments()
-        ->where('student_id', $studentId)->where('status', 'approved')->exists();
+    // البحث عن محاولة الطالب الحالية أو إنشائها
+    $attempt = ExamAttempt::firstOrCreate(
+        [
+            'exam_id'    => $exam->id,
+            'student_id' => $student->id,
+        ],
+        [
+            'started_at' => now(), // إزالة addHours(3) لأنها قد تسبب مشاكل
+        ]
+    );
 
-    $inGroup = $exam->group && $exam->group->members()
-        ->where('student_id', $studentId)->where('status', 'approved')->exists();
+    // مدة الامتحان بالدقايق (من قاعدة البيانات)
+    $durationMinutes = (int) $exam->duration;
+    $durationSeconds = $durationMinutes * 60;
 
-    if (! $isEnrolled && ! $inGroup) {
-        abort(403, 'غير مصرح لك بدخول هذا الامتحان');
+    // حساب الوقت المستهلك (استخدم Carbon بدلاً من now())
+    $startedAt = Carbon::parse($attempt->started_at);
+    $currentTime = now();
+    $elapsed = $currentTime->diffInSeconds($startedAt, false);
+
+    // التأكد من أن الوقت المنقضي ليس سالباً
+    $elapsed = max(0, $elapsed);
+
+    // الوقت المتبقي
+    $remaining = max($durationSeconds - $elapsed, 0);
+
+    // لو الوقت انتهى → تسليم تلقائي
+    if ($remaining <= 0) {
+        return $this->submitExam($exam->id, true); // تمرير معامل للتسليم التلقائي
     }
 
-    // منع الطالب من الدخول لو عنده نتيجة مسجلة
-    $alreadyTaken = $exam->results()->where('student_id', $studentId)->exists();
-    if ($alreadyTaken) {
-        return redirect()->route('student.exams.result', $exam->id);
+    return view('student.exams.attempt', [
+        'exam'     => $exam,
+        'attempt'  => $attempt,
+        'duration' => $remaining, // بالثواني
+    ]);
+}
+
+public function submit(Request $request, $id)
+{
+    $exam = Exam::findOrFail($id);
+    $student = auth()->user();
+    
+    $attempt = ExamAttempt::where([
+        'exam_id' => $exam->id,
+        'student_id' => $student->id,
+    ])->first();
+
+    if (!$attempt) {
+        return redirect()->route('student.exams.index')
+            ->with('error', 'لم يتم العثور على محاولة امتحان صحيحة.');
     }
 
-    return view('student.exams.attempt', compact('exam'));
+    // فحص إذا كان التسليم تلقائياً
+    $autoSubmit = $request->has('auto_submit') && $request->auto_submit == '1';
+    
+    // حفظ الإجابات
+    $this->saveAnswers($request, $attempt);
+    
+    // تحديث وقت الانتهاء
+    $attempt->update([
+        'ended_at' => now(),
+        'submitted' => true,
+        'auto_submitted' => $autoSubmit,
+    ]);
+
+    $message = $autoSubmit 
+        ? '⏰ تم تسليم الامتحان تلقائياً بعد انتهاء الوقت المحدد.'
+        : '✅ تم تسليم الامتحان بنجاح!';
+
+    return redirect()->route('student.exams.result', $exam->id)
+        ->with('success', $message);
+}
+
+private function saveAnswers(Request $request, $attempt)
+{
+    // حفظ الإجابات في قاعدة البيانات
+    foreach ($request->all() as $key => $value) {
+        if (strpos($key, 'question_') === 0) {
+            $questionId = str_replace('question_', '', $key);
+            
+            ExamAnswer::updateOrCreate([
+                'exam_attempt_id' => $attempt->id,
+                'question_id' => $questionId,
+            ], [
+                'answer' => $value,
+            ]);
+        }
+    }
 }
 
 // 🟢 الطالب: تسليم الإجابات
-public function submit(Request $request, $id)
-{
-    $exam = Exam::with('questions.options')->findOrFail($id);
-    $studentId = Auth::id();
+// public function submit(Request $request, $id)
+// {
+//     $exam = Exam::with('questions.options')->findOrFail($id);
+//     $studentId = Auth::id();
 
-    // منع التكرار: لو الطالب حل الامتحان قبل كده
-    if ($exam->results()->where('student_id', $studentId)->exists()) {
-        return redirect()->route('student.exams.result', $exam->id);
-    }
+//     // منع التكرار: لو الطالب حل الامتحان قبل كده
+//     if ($exam->results()->where('student_id', $studentId)->exists()) {
+//         return redirect()->route('student.exams.result', $exam->id);
+//     }
 
-    $answers = $request->input('answers', []);
-    $totalScore = 0;
+//     $answers = $request->input('answers', []);
+//     $totalScore = 0;
 
-    foreach ($exam->questions as $question) {
-        $answerValue = $answers[$question->id] ?? null;
+//     foreach ($exam->questions as $question) {
+//         $answerValue = $answers[$question->id] ?? null;
 
-        if (!$answerValue) {
-            // الطالب لم يجب على هذا السؤال
-            ExamAnswer::create([
-                'student_id'       => $studentId,
-                'exam_question_id' => $question->id,
-                'degree'           => 0,
-            ]);
-            continue;
-        }
+//         if (!$answerValue) {
+//             // الطالب لم يجب على هذا السؤال
+//             ExamAnswer::create([
+//                 'student_id'       => $studentId,
+//                 'exam_question_id' => $question->id,
+//                 'degree'           => 0,
+//             ]);
+//             continue;
+//         }
 
-        // سؤال اختيار من متعدد
-        $chosenOption = $question->options->where('id', $answerValue)->first();
-        $correctOption = $question->options->where('is_correct', 1)->first();
+//         // سؤال اختيار من متعدد
+//         $chosenOption = $question->options->where('id', $answerValue)->first();
+//         $correctOption = $question->options->where('is_correct', 1)->first();
 
-        $isCorrect = $chosenOption && $correctOption && $chosenOption->id == $correctOption->id;
+//         $isCorrect = $chosenOption && $correctOption && $chosenOption->id == $correctOption->id;
 
-        ExamAnswer::create([
-            'student_id'             => $studentId,
-            'exam_question_id'       => $question->id,
-            'exam_question_option_id'=> $chosenOption?->id,
-            'correct_option_id'      => $correctOption?->id,
-            'degree'                 => $isCorrect ? $question->degree : 0,
-        ]);
+//         ExamAnswer::create([
+//             'student_id'             => $studentId,
+//             'exam_question_id'       => $question->id,
+//             'exam_question_option_id'=> $chosenOption?->id,
+//             'correct_option_id'      => $correctOption?->id,
+//             'degree'                 => $isCorrect ? $question->degree : 0,
+//         ]);
 
-        if ($isCorrect) {
-            $totalScore += $question->degree;
-        }
-    }
+//         if ($isCorrect) {
+//             $totalScore += $question->degree;
+//         }
+//     }
 
-    // تسجيل النتيجة
-    ExamResult::create([
-        'exam_id'        => $exam->id,
-        'student_id'     => $studentId,
-        'student_degree' => $totalScore,
-    ]);
+//     // تسجيل النتيجة
+//     ExamResult::create([
+//         'exam_id'        => $exam->id,
+//         'student_id'     => $studentId,
+//         'student_degree' => $totalScore,
+//     ]);
 
-    return redirect()->route('student.exams.result', $exam->id)
-                     ->with('success', 'تم تسليم الامتحان بنجاح');
-}
+//     return redirect()->route('student.exams.result', $exam->id)
+//                      ->with('success', 'تم تسليم الامتحان بنجاح');
+// }
 
+// public function submit(Request $request, $id)
+//     {
+//         $exam = Exam::findOrFail($id);
+//         $student = auth()->user();
+
+//         $attempt = ExamAttempt::where('exam_id', $exam->id)
+//             ->where('student_id', $student->id)
+//             ->firstOrFail();
+
+//         // حساب الوقت
+//         $durationSeconds = ($exam->duration ?? 60) * 60;
+//         $elapsed = now()->addHours(3)->diffInSeconds($attempt->started_at);
+
+//         if ($elapsed > $durationSeconds) {
+//             return redirect()->route('student.exams.index')
+//                 ->with('error', 'انتهى وقت الامتحان ❌');
+//         }
+
+//         // TODO: حساب الدرجة من الإجابات
+//         $attempt->update([
+//             'submitted_at' => now()->addHours(3),
+//             'score' => rand(0, $exam->total_degree), // مؤقت للتجربة
+//         ]);
+
+//         return redirect()->route('student.exams.index')
+//             ->with('success', 'تم تسليم الامتحان ✅');
+//     }
 
 // 🟢 الطالب: عرض النتيجة
 public function result($id)

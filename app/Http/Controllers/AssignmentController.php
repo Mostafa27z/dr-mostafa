@@ -21,7 +21,7 @@ class AssignmentController extends Controller
             ->get();
 
         // تقسيم الواجبات
-        $now = Carbon::now();
+        $now = Carbon::now()->addHours(3);
         $upcoming = $assignments->filter(fn($a) => $a->deadline && $a->deadline->gt($now) && !$a->is_open);
         $open = $assignments->filter(fn($a) => $a->is_open && (!$a->deadline || $a->deadline->gte($now)));
         $past = $assignments->filter(fn($a) => $a->deadline && $a->deadline->lt($now));
@@ -35,7 +35,7 @@ class AssignmentController extends Controller
 
         $groups = Group::where('teacher_id', Auth::id())->get();
 
-        return view('teacher.assignments.index', compact('assignments', 'upcoming', 'open', 'past', 'lessons', 'groups'));
+        return view('assignments.index', compact('assignments', 'upcoming', 'open', 'past', 'lessons', 'groups'));
     }
 
     // فورم إنشاء
@@ -48,7 +48,7 @@ class AssignmentController extends Controller
             ->get();
 
         // تقسيم الواجبات
-        $now = Carbon::now();
+        $now = Carbon::now()->addHours(3);
         $upcoming = $assignments->filter(fn($a) => $a->deadline && $a->deadline->gt($now) && !$a->is_open);
         $open = $assignments->filter(fn($a) => $a->is_open && (!$a->deadline || $a->deadline->gte($now)));
         $past = $assignments->filter(fn($a) => $a->deadline && $a->deadline->lt($now));
@@ -62,7 +62,7 @@ class AssignmentController extends Controller
 
         $groups = Group::where('teacher_id', Auth::id())->get();
 
-        return view('teacher.assignments.index', compact('assignments', 'upcoming', 'open', 'past', 'lessons', 'groups'));
+        return view('assignments.index', compact('assignments', 'upcoming', 'open', 'past', 'lessons', 'groups'));
     }
 
 
@@ -123,7 +123,7 @@ public function deleteFile($id, $index)
     {
         $assignment = Assignment::with(['lesson.course', 'group', 'answers.student'])->findOrFail($id);
 
-        return view('teacher.assignments.show', compact('assignment'));
+        return view('assignments.show', compact('assignment'));
     }
 
     // فورم التعديل
@@ -139,7 +139,7 @@ public function deleteFile($id, $index)
 
         $groups = Group::where('teacher_id', Auth::id())->get();
 
-        return view('teacher.assignments.edit', compact('assignment', 'lessons', 'groups'));
+        return view('assignments.edit', compact('assignment', 'lessons', 'groups'));
     }
 
     // تحديث واجب

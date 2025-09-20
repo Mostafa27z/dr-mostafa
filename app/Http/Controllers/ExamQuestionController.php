@@ -14,7 +14,7 @@ class ExamQuestionController extends Controller
     public function index($examId)
     {
         $exam = Exam::with('questions.options')->findOrFail($examId);
-        return view('teacher.exam_questions.index', compact('exam'));
+        return view('exam_questions.index', compact('exam'));
     }
 
     /**
@@ -23,7 +23,7 @@ class ExamQuestionController extends Controller
     public function create($examId)
     {
         $exam = Exam::findOrFail($examId);
-        return view('teacher.exam_questions.create', compact('exam'));
+        return view('exam_questions.create', compact('exam'));
     }
 
     /**
@@ -57,7 +57,7 @@ class ExamQuestionController extends Controller
         $exam = Exam::findOrFail($examId);
         $question = ExamQuestion::findOrFail($id);
 
-        return view('teacher.exam_questions.edit', compact('exam', 'question'));
+        return view('exam_questions.edit', compact('exam', 'question'));
     }
 
     /**
