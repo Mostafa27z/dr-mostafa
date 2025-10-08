@@ -72,15 +72,7 @@ class DashboardController extends Controller
         ));
     }
 
-    public function groups()
-    {
-        $groups = collect([
-            (object) ['title' => 'مجموعة الرياضيات', 'description' => 'مراجعة منهج الجبر والهندسة'],
-            (object) ['title' => 'مجموعة الفيزياء', 'description' => 'حل مسائل على الكهرباء والمغناطيسية'],
-        ]);
-
-        return view('student.groups', compact('groups'));
-    }
+   
 
     public function sessions()
     {

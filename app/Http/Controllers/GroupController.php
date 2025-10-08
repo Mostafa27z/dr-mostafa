@@ -367,24 +367,24 @@ $group->load(['members.student']);
     /**
      * Get student's groups
      */
-    public function myGroups()
-    {
-        $this->ensureStudent();
+    // public function myGroups()
+    // {
+    //     $this->ensureStudent();
         
-        $student = Auth::user();
+    //     $student = Auth::user();
         
-        $memberGroups = GroupMember::where('student_id', $student->id)
-            ->where('status', 'approved')
-            ->with(['group.teacher', 'group.sessions'])
-            ->get();
+    //     $memberGroups = GroupMember::where('student_id', $student->id)
+    //         ->where('status', 'approved')
+    //         ->with(['group.teacher', 'group.sessions'])
+    //         ->get();
 
-        $pendingRequests = GroupMember::where('student_id', $student->id)
-            ->where('status', 'pending')
-            ->with('group')
-            ->get();
+    //     $pendingRequests = GroupMember::where('student_id', $student->id)
+    //         ->where('status', 'pending')
+    //         ->with('group')
+    //         ->get();
 
-        return view('student.groups.index', compact('memberGroups', 'pendingRequests'));
-    }
+    //     return view('student.groups', compact('memberGroups', 'pendingRequests'));
+    // }
 
     /**
      * Remove a student from group

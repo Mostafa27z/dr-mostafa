@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 class GroupSession extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'group_id',
         'title',

@@ -104,10 +104,22 @@ class StudentController extends Controller
     $studentId = Auth::id();
 
     // المجموعات اللي الطالب منضم ليها
-    $joinedGroups = Group::withCount(['members', 'sessions', 'assignments'])
-        ->whereHas('members', function ($q) use ($studentId) {
-            $q->where('student_id', $studentId)->where('status', 'approved');
-        })->get();
+    $joinedGroups = Group::withCount([
+    'members as approved_members_count' => function ($query) {
+        $query->where('status', 'approved');
+    },
+    'sessions',
+    'assignments'
+])
+->whereHas('members', function ($q) use ($studentId) {
+    $q->where('student_id', $studentId)
+      ->where('status', 'approved');
+})
+->with(['teacher', 'members' => function ($query) use ($studentId) {
+    $query->where('student_id', $studentId);
+}])
+->get();
+
 
     // المجموعات اللي لسه الطالب مقدم عليها (في انتظار موافقة)
     $pendingGroups = Group::withCount(['members'])

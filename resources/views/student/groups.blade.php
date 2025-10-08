@@ -17,8 +17,8 @@
     </div>
 
     <!-- إحصائيات سريعة -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-xl p-4 shadow-md border border-primary-100">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+        {{-- <div class="bg-white rounded-xl p-4 shadow-md border border-primary-100">
             <div class="flex items-center">
                 <div class="bg-primary-100 rounded-lg p-3 ml-3">
                     <i class="fas fa-users text-primary-600"></i>
@@ -28,7 +28,7 @@
                     <p class="text-sm text-gray-600">إجمالي المجموعات</p>
                 </div>
             </div>
-        </div>
+        </div> --}}
         
         <div class="bg-white rounded-xl p-4 shadow-md border border-green-100">
             <div class="flex items-center">
@@ -36,7 +36,7 @@
                     <i class="fas fa-check-circle text-green-600"></i>
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-gray-800">{{ $joinedGroups->where('status', 'active')->count() ?? 0 }}</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $joinedGroups->count() ?? 0 }}</p>
                     <p class="text-sm text-gray-600">مجموعات نشطة</p>
                 </div>
             </div>

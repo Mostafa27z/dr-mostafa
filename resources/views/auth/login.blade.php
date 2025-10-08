@@ -123,7 +123,7 @@
         <!-- رابط إنشاء حساب -->
         <div class="text-center mt-6">
             <p class="text-white/80">ليس لديك حساب؟ 
-                <a href="#" class="text-yellow-300 hover:text-yellow-200 font-semibold transition duration-200">
+                <a href="{{ route('register') }}" class="text-yellow-300 hover:text-yellow-200 font-semibold transition duration-200">
                     <i class="fas fa-user-plus ml-2"></i>
                     إنشاء حساب جديد
                 </a>

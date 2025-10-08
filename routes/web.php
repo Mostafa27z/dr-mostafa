@@ -19,8 +19,8 @@ Route::get('/', function () {
 });
 
 // Dashboard Routes
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/', [DashboardController::class, 'index'])->name('home')->middleware(['auth', 'role:teacher'])->middleware(['auth', 'role:teacher']);
+Route::get('teacher/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Route::get('/', view('welcome'));
 
 // Authentication Routes
 Route::middleware('auth')->group(function () {
@@ -85,7 +85,7 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
 // Student Group Routes (for joining groups)
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::post('/groups/{group}/join', [GroupController::class, 'joinGroup'])->name('groups.join');
-    Route::get('/my-groups', [GroupController::class, 'myGroups'])->name('student.groups');
+    
 });
 
 // Sessions Routes
@@ -178,7 +178,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.ex
 
 // Students Routes
 Route::middleware(['auth', 'role:student'])->prefix('students')->name('students.')->group(function () {
-    Route::get('/', [StudentController::class, 'index'])->name('index');
+    Route::get('/', [StudentController::class, 'home'])->name('index');
     Route::get('/{student}', [StudentController::class, 'show'])->name('show');
     Route::get('/{student}/edit', [StudentController::class, 'edit'])->name('edit');
     Route::put('/{student}', [StudentController::class, 'update'])->name('update');
@@ -187,17 +187,17 @@ Route::middleware(['auth', 'role:student'])->prefix('students')->name('students.
 // Enrollments Routes
 Route::prefix('enrollments')->name('enrollments.')->group(function () {
     Route::get('/', [EnrollmentController::class, 'index'])->name('index')->middleware(['auth', 'role:teacher']);
-    Route::post('/{course}', [EnrollmentController::class, 'store'])->name('store');
+    Route::post('/{course}', [EnrollmentController::class, 'store'])->name('store')->middleware(['auth', 'role:student']);;
     Route::put('/{enrollment}/approve', [EnrollmentController::class, 'approve'])->name('approve')->middleware(['auth', 'role:teacher']);
     Route::put('/{enrollment}/reject', [EnrollmentController::class, 'reject'])->name('reject')->middleware(['auth', 'role:teacher']);
     Route::put('/{enrollment}/complete', [EnrollmentController::class, 'complete'])->name('complete')->middleware(['auth', 'role:teacher']);
     Route::delete('/{enrollment}', [EnrollmentController::class, 'destroy'])->name('destroy')->middleware(['auth', 'role:teacher']);
 });
 
-
+// DASHBOARD
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/home', [DashboardController::class, 'home'])->name('home');
-    Route::get('/groups', [DashboardController::class, 'groups'])->name('groups');
+    // Route::get('/groups', [DashboardController::class, 'groups'])->name('groups');
     Route::get('/sessions', [DashboardController::class, 'sessions'])->name('sessions');
 });
 
