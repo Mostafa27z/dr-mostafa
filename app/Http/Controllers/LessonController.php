@@ -89,113 +89,109 @@ public function create(Request $request)
     }
 
 public function streamVideo(Request $request, Lesson $lesson)
-    {
-        // -- اختياري: تحقق صلاحية المستخدم هنا --
-        $user = $request->user();
-        if (!$user) {
-            abort(403);
+{
+    $user = $request->user();
+    if (!$user) {
+        abort(403);
+    }
+
+    $course = $lesson->course;
+    $isTeacher = $user->id === ($course->teacher_id ?? null);
+    $isEnrolled = \App\Models\CourseEnrollment::where('course_id', $course->id)
+                    ->where('student_id', $user->id)
+                    ->where('status', 'approved')
+                    ->exists();
+
+    if (!($isTeacher || $isEnrolled)) {
+        abort(403, 'غير مصرح بمشاهدة هذا الفيديو');
+    }
+
+    // Use Storage facade instead of file_exists
+    $disk = Storage::disk('public');
+    $relative = $lesson->video;
+    
+    if (!$disk->exists($relative)) {
+        abort(404);
+    }
+
+    $fullPath = $disk->path($relative);
+    $size = $disk->size($relative);
+    $mime = $disk->mimeType($relative) ?: 'video/mp4';
+    
+    $headers = [
+        'Content-Type' => $mime,
+        'Accept-Ranges' => 'bytes',
+        'Cache-Control' => 'public, max-age=31536000',
+        'Pragma' => 'public',
+    ];
+
+    $range = $request->header('Range');
+    if ($range) {
+        preg_match('/bytes=(\d+)-(\d*)/', $range, $matches);
+
+        $start = intval($matches[1]);
+        $end = isset($matches[2]) && $matches[2] !== '' ? intval($matches[2]) : ($size - 1);
+
+        if ($end >= $size) {
+            $end = $size - 1;
+        }
+        if ($start > $end || $start >= $size) {
+            return response('', 416)->header('Content-Range', "bytes */{$size}");
         }
 
-        // Allow owner teacher or enrolled student (example check)
-        $course = $lesson->course;
-        $isTeacher = $user->id === ($course->teacher_id ?? null);
-        $isEnrolled = \App\Models\CourseEnrollment::where('course_id', $course->id)
-                        ->where('student_id', $user->id)
-                        ->where('status', 'approved')
-                        ->exists();
+        $length = $end - $start + 1;
 
-        if (!($isTeacher || $isEnrolled)) {
-            // إذا لا تريد تقييد الوصول - احذف هذا الشرط
-            abort(403, 'غير مصرح بمشاهدة هذا الفيديو');
-        }
-
-        // تحديد المسار الفعلي للملف في الـ storage (public)
-        // افترض أن lesson->video محفوظ كـ "lessons/videos/xxx.mp4" داخل disk public
-        $relative = $lesson->video; // path relative like 'lessons/videos/xxxx.mp4'
-        $fullPath = storage_path('app/public/' . $relative);
-
-        if (!file_exists($fullPath)) {
-            abort(404);
-        }
-
-        $size = filesize($fullPath);
-        $mime = mime_content_type($fullPath) ?: 'video/mp4';
-        $headers = [
-            'Content-Type' => $mime,
-            'Accept-Ranges' => 'bytes',
-            // Cache headers maybe helpful:
-            'Cache-Control' => 'public, max-age=31536000',
-            'Pragma' => 'public',
-        ];
-
-        $range = $request->header('Range'); // e.g. "bytes=START-END"
-        if ($range) {
-            // معالجة طلب Range
-            preg_match('/bytes=(\d+)-(\d*)/', $range, $matches);
-
-            $start = intval($matches[1]);
-            $end = isset($matches[2]) && $matches[2] !== '' ? intval($matches[2]) : ($size - 1);
-
-            if ($end >= $size) {
-                $end = $size - 1;
-            }
-            if ($start > $end || $start >= $size) {
-                return response('', 416)->header('Content-Range', "bytes */{$size}");
-            }
-
-            $length = $end - $start + 1;
-
-            $stream = function() use ($fullPath, $start, $length) {
-                $chunkSize = 1024 * 1024; // 1MB
-                $fp = fopen($fullPath, 'rb');
-                if ($fp === false) {
-                    return;
-                }
-                fseek($fp, $start);
-
-                $bytesLeft = $length;
-                while ($bytesLeft > 0 && !feof($fp)) {
-                    $read = ($bytesLeft > $chunkSize) ? $chunkSize : $bytesLeft;
-                    $buffer = fread($fp, $read);
-                    echo $buffer;
-                    flush();
-                    $bytesLeft -= strlen($buffer);
-                    // if connection aborted, stop
-                    if (connection_aborted()) {
-                        break;
-                    }
-                }
-                fclose($fp);
-            };
-
-            $status = 206;
-            $headers = array_merge($headers, [
-                'Content-Length' => $length,
-                'Content-Range' => "bytes {$start}-{$end}/{$size}",
-            ]);
-
-            return response()->stream($stream, $status, $headers);
-        }
-
-        // إذا لا يوجد Range -> نرسل الملف كاملًا (200)
-        $stream = function() use ($fullPath) {
-            $fp = fopen($fullPath, 'rb');
-            if ($fp === false) {
+        $stream = function() use ($disk, $relative, $start, $length) {
+            $chunkSize = 1024 * 1024;
+            $resource = $disk->readStream($relative);
+            if ($resource === false) {
                 return;
             }
-            while (!feof($fp)) {
-                echo fread($fp, 1024 * 1024);
+            fseek($resource, $start);
+
+            $bytesLeft = $length;
+            while ($bytesLeft > 0 && !feof($resource)) {
+                $read = ($bytesLeft > $chunkSize) ? $chunkSize : $bytesLeft;
+                $buffer = fread($resource, $read);
+                echo $buffer;
                 flush();
-                if (connection_aborted()) break;
+                $bytesLeft -= strlen($buffer);
+                if (connection_aborted()) {
+                    break;
+                }
             }
-            fclose($fp);
+            fclose($resource);
         };
 
-        $headers['Content-Length'] = $size;
+        $status = 206;
+        $headers = array_merge($headers, [
+            'Content-Length' => $length,
+            'Content-Range' => "bytes {$start}-{$end}/{$size}",
+        ]);
 
-        return response()->stream($stream, 200, $headers);
+        return response()->stream($stream, $status, $headers);
     }
-/**
+
+    // Full file response
+    $stream = function() use ($disk, $relative) {
+        $resource = $disk->readStream($relative);
+        if ($resource === false) {
+            return;
+        }
+        while (!feof($resource)) {
+            echo fread($resource, 1024 * 1024);
+            flush();
+            if (connection_aborted()) break;
+        }
+        fclose($resource);
+    };
+
+    $headers['Content-Length'] = $size;
+
+    return response()->stream($stream, 200, $headers);
+}
+
+    /**
  * Get video duration (optional helper method)
  * Requires getID3 package: composer require james-heinrich/getid3
  */

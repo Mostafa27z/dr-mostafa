@@ -124,6 +124,8 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
 
     // تسليم الواجب
     Route::post('/assignments/{id}/submit', [AssignmentAnswerController::class, 'submit'])->name('assignments.submit');
+    Route::post('/assignments/{id}/resubmit', [AssignmentAnswerController::class, 'resubmit'])
+    ->name('assignments.resubmit');
 
     // عرض النتيجة
     Route::get('/assignments/{id}/result', [AssignmentAnswerController::class, 'result'])->name('assignments.result');

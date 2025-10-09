@@ -20,7 +20,7 @@ class AssignmentAnswerController extends Controller
         $data = $request->validate([
             'teacher_comment' => 'nullable|string',
             'teacher_degree'  => 'nullable|integer|min:0',
-            'teacher_file'    => 'nullable|file|max:5120',
+            'teacher_file'    =>  'nullable|file|mimes:pdf,doc,docx,zip,txt,jpg,jpeg,png,webp|max:5120',
         ]);
 
         if ($request->hasFile('teacher_file')) {
@@ -38,14 +38,13 @@ public function submit(Request $request, $assignmentId)
     $assignment = \App\Models\Assignment::findOrFail($assignmentId);
     $studentId = Auth::id();
 
-    // لو الطالب مسلّم قبل كده
     if (AssignmentAnswer::where('assignment_id', $assignment->id)->where('student_id', $studentId)->exists()) {
         return redirect()->route('student.assignments.result', $assignment->id);
     }
 
     $data = $request->validate([
-        'answer_text' => 'nullable|string',
-        'answer_file' => 'nullable|file|max:5120',
+        'answer_text' => 'required_without:answer_file|string|nullable',
+        'answer_file' => 'required_without:answer_text|file|mimes:pdf,doc,docx,zip,txt,jpg,jpeg,png|max:5120|nullable',
     ]);
 
     if ($request->hasFile('answer_file')) {
@@ -60,6 +59,37 @@ public function submit(Request $request, $assignmentId)
     return redirect()->route('student.assignments.result', $assignment->id)
                      ->with('success', 'تم تسليم الواجب بنجاح');
 }
+
+
+public function resubmit(Request $request, $assignmentId)
+{
+    $assignment = \App\Models\Assignment::findOrFail($assignmentId);
+    $studentId = Auth::id();
+
+    $answer = AssignmentAnswer::where('assignment_id', $assignment->id)
+        ->where('student_id', $studentId)
+        ->firstOrFail();
+
+    if (($assignment->deadline && $assignment->deadline->isPast()) || $answer->teacher_degree !== null) {
+        return back()->withErrors(['msg' => 'لا يمكنك تعديل الإجابة بعد انتهاء الموعد أو بعد مراجعتها.']);
+    }
+
+    $data = $request->validate([
+        'answer_text' => 'required_without:answer_file|string|nullable',
+        'answer_file' => 'required_without:answer_text|file|mimes:pdf,doc,docx,zip,txt,jpg,jpeg,png|max:5120|nullable',
+    ]);
+
+    if ($request->hasFile('answer_file')) {
+        $data['answer_file'] = $request->file('answer_file')->store('assignment_answers', 'public');
+    }
+
+    $answer->update($data);
+
+    return redirect()->route('student.assignments.result', $assignment->id)
+                     ->with('success', 'تم تحديث الإجابة بنجاح قبل انتهاء الموعد.');
+}
+
+
 
 // 🟢 الطالب: عرض نتيجة الواجب
 public function result($assignmentId)
