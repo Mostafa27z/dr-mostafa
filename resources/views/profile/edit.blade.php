@@ -12,7 +12,20 @@
     <div class="bg-blue-600 shadow">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <h1 class="text-xl font-bold text-white">الملف الشخصي</h1>
-            <a href="{{ url()->previous() }}" 
+
+            @php
+                $user = auth()->user();
+
+                if ($user->isTeacher()) {
+                    $backRoute = route('dashboard');
+                } elseif ($user->isStudent()) {
+                    $backRoute = route('student.home');
+                } else {
+                    $backRoute = url()->previous();
+                }
+            @endphp
+
+            <a href="{{ $backRoute }}" 
                class="inline-flex items-center px-4 py-2 bg-white text-blue-600 text-sm font-medium rounded-lg shadow hover:bg-gray-100 transition">
                 ⬅ رجوع
             </a>
@@ -37,14 +50,6 @@
                     @include('profile.partials.update-password-form')
                 </div>
             </div>
-
-            {{-- حذف الحساب --}}
-            {{-- <div class="p-6 bg-white shadow rounded-2xl border border-gray-200">
-                <h2 class="text-lg font-semibold text-red-600 mb-4 border-b pb-2">حذف الحساب</h2>
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div> --}}
 
         </div>
     </div>

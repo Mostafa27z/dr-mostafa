@@ -24,10 +24,16 @@
                                 <h5 class="text-white text-xl font-semibold">فيديو الدرس</h5>
                             </div>
                             <div class="p-4">
-                                <video src="{{ $lesson->video_url }}" 
-                                       controls 
-                                       class="w-full rounded-lg" 
-                                       style="max-height: 400px;"></video>
+                                <!-- مشغل Plyr -->
+                                <video id="lessonVideo"
+                                       playsinline
+                                       controls
+                                       class="w-full rounded-lg shadow-md"
+                                       preload="metadata"
+                                       style="max-height: 400px;">
+                                    <source src="{{ route('lessons.video', $lesson->id) }}" type="video/mp4" />
+                                    متصفحك لا يدعم تشغيل الفيديو.
+                                </video>
                             </div>
                         </div>
                     @endif
@@ -137,4 +143,28 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <!-- Plyr CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    
+    <script>
+    // تهيئة مشغل Plyr للفيديو
+    document.addEventListener("DOMContentLoaded", () => {
+        const videoElement = document.getElementById('lessonVideo');
+        if (videoElement) {
+            const player = new Plyr('#lessonVideo', {
+                controls: [
+                    'play-large', 'play', 'progress', 'current-time', 'duration',
+                    'mute', 'volume', 'settings', 'fullscreen'
+                ]
+            });
+
+            // منع كليك يمين
+            videoElement.addEventListener('contextmenu', e => e.preventDefault());
+        }
+    });
+    </script>
+    @endpush
 </x-app-layout>

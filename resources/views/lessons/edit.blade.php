@@ -3,7 +3,7 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-white leading-tight flex items-center">
             <i class="fas fa-edit ml-2"></i>
-            تعديل الدرس: {{ $lesson->title }}
+            تعديل456 الدرس: {{ $lesson->title }}
         </h2>
     </x-slot>
 
@@ -64,12 +64,17 @@
                 </div>
 
                 <!-- الفيديو الحالي -->
-                @if($lesson->video_url)
+                @if($lesson->video)
                     <div>
                         <label class="block text-gray-700 mb-2 font-medium">الفيديو الحالي</label>
-                        <video controls class="rounded-xl w-full max-w-lg">
-                            <source src="{{ $lesson->video_url }}" type="video/mp4">
-                            متصفحك لا يدعم تشغيل الفيديو
+                        <!-- مشغل Plyr -->
+                        <video id="lessonVideo"
+                               playsinline
+                               controls
+                               class="w-full rounded-xl shadow-md"
+                               preload="metadata">
+                            <source src="{{ route('lessons.video', $lesson->id) }}" type="video/mp4" />
+                            متصفحك لا يدعم تشغيل الفيديو.
                         </video>
                     </div>
                 @endif
@@ -137,10 +142,31 @@
     </div>
 
     @push('scripts')
+    <!-- Plyr CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
     <script>
+    // تهيئة مشغل Plyr للفيديو
+    document.addEventListener("DOMContentLoaded", () => {
+        const videoElement = document.getElementById('lessonVideo');
+        if (videoElement) {
+            const player = new Plyr('#lessonVideo', {
+                controls: [
+                    'play-large', 'play', 'progress', 'current-time', 'duration',
+                    'mute', 'volume', 'settings', 'fullscreen'
+                ]
+            });
+
+            // منع كليك يمين
+            videoElement.addEventListener('contextmenu', e => e.preventDefault());
+        }
+    });
+
+    // معالجة إرسال الفورم
     document.getElementById('lesson-form').addEventListener('submit', function(e) {
-        e.preventDefault(); // منع الإرسال التقليدي
+        e.preventDefault();
 
         const form = e.target;
         const url = form.action;
