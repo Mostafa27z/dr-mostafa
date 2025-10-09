@@ -120,7 +120,7 @@
             <x-quick-access>
                 <x-quick-link icon="fa-plus" label="إضافة درس جديد" url="{{ route('lessons.create') }}" />
                 <x-quick-link icon="fa-book" label="إدارة الدورات" url="{{ route('courses.index') }}" />
-                <x-quick-link icon="fa-users" label="إدارة الطلاب" url="{{ route('students.index') }}" />
+                {{-- <x-quick-link icon="fa-users" label="إدارة الطلاب" url="{{ route('students.index') }}" /> --}}
                 <x-quick-link icon="fa-file-alt" label="إنشاء اختبار" url="{{ route('exams.create') }}" />
                 <x-quick-link icon="fa-users" label="إدارة المجموعات" url="{{ route('teacher.groups.index') }}" />
                 <x-quick-link icon="fa-video" label="الجلسات" url="{{ route('sessions.index') }}" />

@@ -7,14 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 class ExamAttempt extends Model
 {
     protected $fillable = [
-        'exam_id',
-        'student_id',
-        'started_at',
-        'submitted_at',
-        'score',
-    ];
+    'exam_id',
+    'student_id',
+    'started_at',
+    'submitted_at',
+    'score',
+    'ended_at',
+    'submitted',
+    'auto_submitted',
+];
 
-    protected $dates = ['started_at', 'submitted_at'];
+protected $casts = [
+    'submitted' => 'boolean',
+    'auto_submitted' => 'boolean',
+    'started_at' => 'datetime',
+    'submitted_at' => 'datetime',
+    'ended_at' => 'datetime',
+];
+
+
+    // protected $dates = ['started_at', 'submitted_at'];
 
     public function exam()
     {

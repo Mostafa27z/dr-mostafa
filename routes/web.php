@@ -175,6 +175,16 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.ex
 
     // عرض النتيجة
     Route::get('/exams/{id}/result', [ExamController::class, 'result'])->name('result');
+    // student exam AJAX routes
+Route::get('/exams/{id}/attempt-data', [ExamController::class, 'attemptData'])
+    ->name('attempt_data');
+
+Route::post('/exams/{id}/save-answer', [ExamController::class, 'saveAnswerAjax'])
+    ->name('save_answer');
+
+Route::post('/exams/{id}/auto-submit', [ExamController::class, 'autoSubmitAjax'])
+    ->name('auto_submit');
+
 });
 
 
@@ -212,7 +222,7 @@ Route::prefix('student')->middleware(['auth', 'role:student'])->group(function (
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/courses', [StudentController::class, 'courses'])->name('courses');
     Route::get('/courses/{course}', [StudentController::class, 'showCourse'])->name('courses.show');
-     Route::get('/courses/{course}/lessons/{lesson}', [\App\Http\Controllers\StudentController::class, 'showLesson'])->name('lessons.show');
+     Route::get('/courses/{course}/lessons/{lesson}', [StudentController::class, 'showLesson'])->name('lessons.show');
 });
 Route::middleware(['auth'])->group(function () {
     Route::get('/lessons/{lesson}/video', [LessonController::class, 'streamVideo'])
