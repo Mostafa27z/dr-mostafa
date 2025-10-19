@@ -6,14 +6,19 @@ use Illuminate\Http\Request;
 
 class VideoController extends Controller
 {
+    private string $user_ip;
+
+    public function __construct()
+    {
+        $this->user_ip = trim(file_get_contents('https://api.ipify.org'));
+    }
+
     private function sign_bcdn_url($name, $is_directory_token = false, $path_allowed = NULL, $countries_allowed = NULL, $countries_blocked = NULL, $referers_allowed = NULL)
     {    
         $url = env('BUNNYCDN_PULL_ZONE') . $name;
         $securityKey = env('BUNNYCDN_PULL_ZONE_API_KEY');
         $expiration_time = 10800;
-        $user_ip = cache()->rememberForever('server_public_ip', function () {
-                    return trim(file_get_contents('https://api.ipify.org'));
-                    });
+        $user_ip = $this->user_ip;
 
         if(!is_null($countries_allowed))
         {
@@ -99,7 +104,15 @@ class VideoController extends Controller
 
     public function stream($path, Request $request)
     {
-        
+     
+        $location = session('location');
+        $user_ip = $this->user_ip;
+        $client_ip = $request->ip();
+        if ($location !== env('LOCATION') && $client_ip !== $user_ip) {
+            abort(403, 'Forbidden');
+        }
+        session()->forget('location');
+
         $secureUrl = $this->sign_bcdn_url($path);
                 
         // Get video headers first
