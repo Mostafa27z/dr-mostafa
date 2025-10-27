@@ -30,8 +30,8 @@
                                        controls
                                        class="w-full rounded-lg shadow-md"
                                        preload="metadata"
-                                       style="max-height: 400px;">
-                                    <source src="{{ route('lessons.video', $lesson->id) }}" type="video/mp4" />
+                                       style="max-height: 400px;"
+                                       src="{{ sign_bcdn_url($lesson->video) }}">
                                     متصفحك لا يدعم تشغيل الفيديو.
                                 </video>
                             </div>

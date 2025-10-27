@@ -50,13 +50,13 @@ public function create(Request $request)
         // ✅ 3. رفع الفيديو إن وجد
         if ($request->hasFile('video')) {
             $video = $request->file('video');
-
-            $path = $video->store('lessons/videos', 'public');
-
-            $data['video']        = $path;
-            $data['video_name']   = $video->getClientOriginalName();
+            
+            $data['video_name']   = str_replace(' ', '_', trim($request->file('video')->getClientOriginalName()));
+            $data['video']        = 'lessons/videos/' . $data['video_name'];
             $data['video_size']   = $video->getSize();
             $data['video_duration'] = null; // ممكن تضيف مكتبة لحساب مدة الفيديو
+            
+            Storage::disk('bunnycdn')->put("lessons/videos/{$data['video_name']}", fopen($video, 'r+'));
         }
 
         // ✅ 4. رفع الملفات المرفقة إن وجدت
@@ -262,16 +262,17 @@ public function uploadProgress(Request $request)
 
     // ✅ تحديث الفيديو إذا تم رفع فيديو جديد
     if ($request->hasFile('video')) {
-        if ($lesson->video && \Storage::disk('public')->exists($lesson->video)) {
-            \Storage::disk('public')->delete($lesson->video);
+        if ($lesson->video && \Storage::disk('bunnycdn')->exists($lesson->video)) {
+            Storage::disk('bunnycdn')->delete($lesson->video);
         }
+        $video = $request->file('video');
 
-        $videoPath = $request->file('video')->store('lessons/videos', 'public');
-
-        $validated['video']       = $videoPath;
-        $validated['video_name']  = $request->file('video')->getClientOriginalName();
+        $validated['video_name']  = str_replace(' ', '_', trim($request->file('video')->getClientOriginalName()));
+        $validated['video']       = 'lessons/videos/' . $validated['video_name'];
         $validated['video_size']  = $request->file('video')->getSize();
         $validated['video_duration'] = null; // ممكن تضيف مكتبة لحساب مدة الفيديو
+        
+        Storage::disk('bunnycdn')->put("lessons/videos/{$validated['video_name']}", fopen($video, 'r+'));
     }
 
     // ✅ تحديث الملفات إذا تم رفع ملفات جديدة
@@ -318,7 +319,7 @@ public function uploadProgress(Request $request)
 
     // ✅ حذف الفيديو المرتبط
     if (!empty($lesson->video)) {
-        Storage::disk('public')->delete($lesson->video);
+        Storage::disk('bunnycdn')->delete($lesson->video);
     }
 
     // ✅ حذف الملفات المرتبطة

@@ -72,8 +72,8 @@
                                playsinline
                                controls
                                class="w-full rounded-xl shadow-md"
-                               preload="metadata">
-                            <source src="{{ route('lessons.video', $lesson->id) }}" type="video/mp4" />
+                               preload="metadata"
+                               src="{{ sign_bcdn_url($lesson->video) }}">
                             متصفحك لا يدعم تشغيل الفيديو.
                         </video>
                     </div>
