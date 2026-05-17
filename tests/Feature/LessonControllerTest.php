@@ -63,29 +63,27 @@ class LessonControllerTest extends TestCase
     {
         $this->actingAs($this->teacher);
 
-        $video = UploadedFile::fake()->create('video.mp4', 10000); // 10MB
+        $youtubeUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
         $pdf = UploadedFile::fake()->create('file.pdf', 100); // 100KB
 
         $response = $this->post(route('lessons.store'), [
             'title' => 'Test Lesson',
             'description' => 'Lesson description',
             'course_id' => $this->course->id,
-            'video' => $video,
+            'video' => $youtubeUrl,
             'files' => [$pdf]
         ]);
 
         $response->assertRedirect(route('lessons.index'));
         $response->assertSessionHas('success');
 
-        $lesson = Lesson::first();
-        $this->assertEquals('Test Lesson', $lesson->title);
-
-        // Check video uploaded
-        Storage::disk('public')->assertExists($lesson->video);
+        $lesson = Lesson::where('title', 'Test Lesson')->first();
+        $this->assertEquals('dQw4w9WgXcQ', $lesson->video);
 
         // Check file uploaded
         $this->assertNotEmpty($lesson->files);
         $this->assertEquals('file.pdf', $lesson->files[0]['original_name']);
+        Storage::disk('public')->assertExists($lesson->files[0]['path']);
     }
 
     /** @test */
@@ -119,14 +117,14 @@ class LessonControllerTest extends TestCase
 
         $this->actingAs($this->teacher);
 
-        $newVideo = UploadedFile::fake()->create('newvideo.mp4', 5000);
+        $newYoutubeUrl = 'https://www.youtube.com/watch?v=y6120QOlsfU';
         $newPdf = UploadedFile::fake()->create('newfile.pdf', 50);
 
         $response = $this->put(route('lessons.update', $lesson), [
             'title' => 'Updated Lesson',
             'description' => 'Updated Description',
             'course_id' => $this->course->id,
-            'video' => $newVideo,
+            'video' => $newYoutubeUrl,
             'files' => [$newPdf]
         ]);
 
@@ -135,19 +133,19 @@ class LessonControllerTest extends TestCase
 
         $lesson->refresh();
         $this->assertEquals('Updated Lesson', $lesson->title);
-        Storage::disk('public')->assertExists($lesson->video);
+        $this->assertEquals('y6120QOlsfU', $lesson->video);
         $this->assertEquals('newfile.pdf', $lesson->files[0]['original_name']);
+        Storage::disk('public')->assertExists($lesson->files[0]['path']);
     }
 
     /** @test */
     public function teacher_can_delete_lesson_and_files()
     {
-        $video = UploadedFile::fake()->create('video.mp4', 1000);
         $file = UploadedFile::fake()->create('file.pdf', 50);
 
         $lesson = Lesson::factory()->create([
             'course_id' => $this->course->id,
-            'video' => $video->store('lessons/videos', 'public'),
+            'video' => 'dQw4w9WgXcQ',
             'files' => [
                 [
                     'original_name' => $file->getClientOriginalName(),
@@ -168,69 +166,9 @@ class LessonControllerTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseMissing('lessons', ['id' => $lesson->id]);
-        Storage::disk('public')->assertMissing($lesson->video);
         Storage::disk('public')->assertMissing($lesson->files[0]['path']);
     }
 
-/** @test */
-public function student_can_stream_video_if_enrolled()
-{
-    Storage::fake('public');
-
-    $lesson = Lesson::factory()->create(['course_id' => $this->course->id]);
-    
-    // Create a fake video file
-    $video = UploadedFile::fake()->create('lesson.mp4', 1000, 'video/mp4');
-    $videoPath = $video->store('lessons/videos', 'public');
-    $lesson->update(['video' => $videoPath]);
-
-    // Verify the file exists in fake storage
-    Storage::disk('public')->assertExists($videoPath);
-
-    CourseEnrollment::factory()->create([
-        'course_id' => $this->course->id,
-        'student_id' => $this->student->id,
-        'status' => 'approved'
-    ]);
-
-    $this->actingAs($this->student);
-    
-    // Mock the file_exists and filesize checks since Storage::fake doesn't create real files
-    // that file_exists() can find
-    $fullPath = Storage::disk('public')->path($videoPath);
-    
-    // Create the actual directory structure and file for the test
-    $directory = dirname($fullPath);
-    if (!file_exists($directory)) {
-        mkdir($directory, 0755, true);
-    }
-    file_put_contents($fullPath, 'fake video content');
-
-    $response = $this->get(route('lessons.video', $lesson));
-
-    $response->assertStatus(200);
-    $response->assertHeader('Content-Type');
-    
-    // Cleanup
-    if (file_exists($fullPath)) {
-        unlink($fullPath);
-    }
-}
-
-/** @test */
-public function student_cannot_stream_video_if_not_enrolled()
-{
-    Storage::fake('public');
-
-    $lesson = Lesson::factory()->create(['course_id' => $this->course->id]);
-    $video = UploadedFile::fake()->create('lesson.mp4', 1000);
-    $lesson->update(['video' => $video->store('lessons/videos', 'public')]);
-
-    $this->actingAs($this->student);
-    $response = $this->get(route('lessons.video', $lesson));
-
-    $response->assertStatus(403);
-}
 
 
 

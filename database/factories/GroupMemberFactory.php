@@ -15,7 +15,7 @@ class GroupMemberFactory extends Factory
     {
         return [
             'group_id' => Group::factory(),
-            'student_id' => User::factory(),
+            'student_id' => User::factory()->student(),
             'status' => $this->faker->randomElement(['pending', 'approved']),
         ];
     }

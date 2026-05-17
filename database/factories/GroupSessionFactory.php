@@ -17,8 +17,8 @@ class GroupSessionFactory extends Factory
 
         return [
             'group_id' => Group::factory(),
-            'title' => $this->faker->sentence(4),
-            'description' => $this->faker->paragraph(),
+            'title' => fake('ar_SA')->realText(20),
+            'description' => fake('ar_SA')->realText(100),
             'time' => $startTime,
             'link' => $this->faker->url(),
         ];

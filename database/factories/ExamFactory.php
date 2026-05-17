@@ -17,8 +17,8 @@ class ExamFactory extends Factory
     public function definition(): array
     {
         return [
-            'title'         => $this->faker->sentence(3),
-            'description'   => $this->faker->paragraph(),
+            'title'         => fake('ar_SA')->realText(30),
+            'description'   => fake('ar_SA')->realText(150),
             'start_time'    => now()->addDays(rand(1, 3)),
             'end_time'      => now()->addDays(rand(4, 6)),
             'duration'      => $this->faker->numberBetween(30, 120),
@@ -26,8 +26,8 @@ class ExamFactory extends Factory
             'is_limited'    => $this->faker->boolean(),
             'total_degree'  => $this->faker->numberBetween(50, 100),
             'lesson_id'     => Lesson::factory(), 
-            'teacher_id'    => User::factory()->create(['role' => 'teacher'])->id,
-            'group_id'      => null, // optional
+            'teacher_id'    => User::factory()->teacher(),
+            'group_id'      => null,
             'created_at'    => now(),
             'updated_at'    => now(),
         ];

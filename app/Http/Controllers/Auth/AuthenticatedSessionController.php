@@ -31,6 +31,10 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
 
         // ✅ تحويل المستخدم حسب الدور
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
         if ($user->role === 'teacher') {
             return redirect()->route('dashboard');
         }
@@ -40,7 +44,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         // fallback لو مفيش role مطابق
-        return redirect()->route('home');
+        return redirect('/');
     }
 
     /**

@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // ✅ تسجيل الـ alias للميدل وير
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'subscription' => \App\Http\Middleware\CheckSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

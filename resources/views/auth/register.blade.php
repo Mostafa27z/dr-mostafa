@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إنشاء حساب - منصة الدكتور مصطفى طنطاوي</title>
+    <title>إنشاء حساب - {{ config('app.name', 'منصة السحاب') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,14 +15,30 @@
         }
         .floating { animation: floating 4s ease-in-out infinite; }
         @keyframes floating { 0%{transform:translateY(0);} 50%{transform:translateY(-20px);} 100%{transform:translateY(0);} }
+        .form-input:focus { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3); }
     </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+                            400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+                            800: '#5b21b6', 900: '#4c1d95',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 min-h-screen text-white overflow-x-hidden islamic-pattern flex items-center justify-center p-4 py-10">
+<body class="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 min-h-screen text-white overflow-x-hidden islamic-pattern flex items-center justify-center p-4 py-10">
 
     <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10">
         <div class="absolute w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse top-10 left-10"></div>
-        <div class="absolute w-96 h-96 bg-sky-300/20 rounded-full blur-3xl animate-bounce bottom-10 right-10"></div>
-        <div class="absolute w-64 h-64 bg-blue-400/30 rounded-full blur-2xl floating top-1/2 left-1/3"></div>
+        <div class="absolute w-96 h-96 bg-primary-300/20 rounded-full blur-3xl animate-bounce bottom-10 right-10"></div>
+        <div class="absolute w-64 h-64 bg-primary-400/30 rounded-full blur-2xl floating top-1/2 left-1/3"></div>
     </div>
 
     <div class="w-full max-w-md fade-in">
@@ -31,7 +47,7 @@
                 <i class="fas fa-user-plus text-2xl"></i>
             </div>
             <h1 class="text-3xl font-bold">إنشاء حساب جديد</h1>
-            <p class="mt-2 opacity-90">انضم إلى منصة الدكتور مصطفى طنطاوي التعليمية</p>
+            <p class="mt-2 opacity-90">انضم إلى مجتمعنا التعليمي المتكامل</p>
         </div>
 
         <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl p-6 md:p-8">
@@ -56,7 +72,7 @@
                     <label for="name" class="block mb-2 font-medium">الاسم الكامل</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="far fa-user text-sky-500"></i>
+                            <i class="far fa-user text-primary-300"></i>
                         </div>
                         <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
                             class="form-input bg-white/5 border @error('name') border-red-400 @else border-white/10 @enderror rounded-2xl w-full py-3 px-4 pr-10 text-white placeholder-white/50 focus:outline-none"
@@ -72,7 +88,7 @@
                     <label for="email" class="block mb-2 font-medium">البريد الإلكتروني</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="far fa-envelope text-sky-500"></i>
+                            <i class="far fa-envelope text-primary-300"></i>
                         </div>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required
                             class="form-input bg-white/5 border @error('email') border-red-400 @else border-white/10 @enderror rounded-2xl w-full py-3 px-4 pr-10 text-white placeholder-white/50 focus:outline-none"
@@ -88,13 +104,13 @@
                     <label for="password" class="block mb-2 font-medium">كلمة المرور</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="fas fa-lock text-sky-500"></i>
+                            <i class="fas fa-lock text-primary-300"></i>
                         </div>
                         <input id="password" type="password" name="password" required autocomplete="new-password"
                             class="form-input bg-white/5 border @error('password') border-red-400 @else border-white/10 @enderror rounded-2xl w-full py-3 px-4 pr-10 text-white placeholder-white/50 focus:outline-none"
                             placeholder="أدخل كلمة المرور">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-                            <i class="password-toggle far fa-eye-slash text-sky-500" id="togglePassword"></i>
+                            <i class="password-toggle far fa-eye-slash text-primary-300" id="togglePassword"></i>
                         </div>
                     </div>
                     @error('password')
@@ -107,20 +123,20 @@
                     <label for="password_confirmation" class="block mb-2 font-medium">تأكيد كلمة المرور</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="fas fa-lock text-sky-500"></i>
+                            <i class="fas fa-lock text-primary-300"></i>
                         </div>
                         <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password"
                             class="form-input bg-white/5 border border-white/10 rounded-2xl w-full py-3 px-4 pr-10 text-white placeholder-white/50 focus:outline-none"
                             placeholder="أعد إدخال كلمة المرور">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-                            <i class="password-toggle far fa-eye-slash text-sky-500" id="togglePasswordConfirmation"></i>
+                            <i class="password-toggle far fa-eye-slash text-primary-300" id="togglePasswordConfirmation"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- أزرار -->
                 <div class="flex flex-col space-y-4">
-                    <button type="submit" class="py-3 px-4 bg-yellow-400 hover:bg-yellow-500 text-sky-900 font-semibold rounded-2xl shadow-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300">
+                    <button type="submit" class="py-3 px-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-2xl shadow-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-300">
                         <i class="fas fa-user-plus ml-2"></i> إنشاء حساب
                     </button>
 

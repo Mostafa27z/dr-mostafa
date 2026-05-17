@@ -9,10 +9,10 @@ class ContactMessageFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'phone' => $this->faker->phoneNumber(),
-            'title' => $this->faker->sentence(),
-            'content' => $this->faker->paragraph(),
+            'name' => fake('ar_SA')->name(),
+            'phone' => fake('ar_SA')->phoneNumber(),
+            'title' => fake('ar_SA')->realText(30),
+            'content' => fake('ar_SA')->realText(200),
         ];
     }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - منصة الدكتور مصطفى طنطاوي</title>
+    <title>تسجيل الدخول - {{ config('app.name', 'منصة السحاب') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -18,16 +18,31 @@
         .fade-in { animation: fadeIn 1s ease-in-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
         .form-input { transition: all 0.3s ease; }
-        .form-input:focus { box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3); }
+        .form-input:focus { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3); }
     </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+                            400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+                            800: '#5b21b6', 900: '#4c1d95',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 min-h-screen text-white overflow-x-hidden islamic-pattern flex items-center justify-center p-4">
+<body class="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 min-h-screen text-white overflow-x-hidden islamic-pattern flex items-center justify-center p-4">
 
     <!-- فقاعات الخلفية -->
     <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10">
         <div class="absolute w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse top-10 left-10"></div>
-        <div class="absolute w-96 h-96 bg-sky-300/20 rounded-full blur-3xl animate-bounce bottom-10 right-10"></div>
-        <div class="absolute w-64 h-64 bg-blue-400/30 rounded-full blur-2xl floating top-1/2 left-1/3"></div>
+        <div class="absolute w-96 h-96 bg-primary-300/20 rounded-full blur-3xl animate-bounce bottom-10 right-10"></div>
+        <div class="absolute w-64 h-64 bg-primary-400/30 rounded-full blur-2xl floating top-1/2 left-1/3"></div>
     </div>
 
     <div class="w-full max-w-md fade-in">
@@ -37,7 +52,7 @@
                 <i class="fas fa-graduation-cap text-2xl"></i>
             </div>
             <h1 class="text-3xl font-bold">تسجيل الدخول</h1>
-            <p class="mt-2 opacity-90">منصة الدكتور مصطفى طنطاوي التعليمية</p>
+            <p class="mt-2 opacity-90">المنصة التعليمية المتكاملة</p>
         </div>
 
         <!-- بطاقة تسجيل -->
@@ -65,10 +80,10 @@
                     <label for="email" class="block mb-2 font-medium">البريد الإلكتروني</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="far fa-envelope text-sky-500"></i>
+                            <i class="far fa-envelope text-primary-300"></i>
                         </div>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email"
-                            class="form-input bg-white/5 border border-white/10 rounded-2xl shadow-sm w-full py-3 px-4 pr-10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-transparent transition duration-200"
+                            class="form-input bg-white/5 border border-white/10 rounded-2xl shadow-sm w-full py-3 px-4 pr-10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-transparent transition duration-200"
                             placeholder="أدخل بريدك الإلكتروني">
                     </div>
                     {{-- @error('email')
@@ -81,10 +96,10 @@
                     <label for="password" class="block mb-2 font-medium">كلمة المرور</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="fas fa-lock text-sky-500"></i>
+                            <i class="fas fa-lock text-primary-300"></i>
                         </div>
                         <input id="password" type="password" name="password" required autocomplete="current-password"
-                            class="form-input bg-white/5 border border-white/10 rounded-2xl shadow-sm w-full py-3 px-4 pr-10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-transparent transition duration-200"
+                            class="form-input bg-white/5 border border-white/10 rounded-2xl shadow-sm w-full py-3 px-4 pr-10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-transparent transition duration-200"
                             placeholder="أدخل كلمة المرور">
                     </div>
                     {{-- @error('password')
@@ -96,14 +111,14 @@
                 <div class="flex items-center mb-6">
                     <label for="remember_me" class="inline-flex items-center cursor-pointer">
                         <input id="remember_me" type="checkbox" name="remember"
-                            class="rounded border-white/30 bg-white/5 text-sky-500 shadow-sm focus:ring-sky-300 focus:ring-offset-0">
+                            class="rounded border-white/30 bg-white/5 text-primary-500 shadow-sm focus:ring-primary-300 focus:ring-offset-0">
                         <span class="mr-2 text-sm">تذكرني</span>
                     </label>
                 </div>
 
                 <!-- زر -->
                 <div class="flex flex-col space-y-4">
-                    <button type="submit" class="py-3 px-4 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-2xl shadow-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-sky-800">
+                    <button type="submit" class="py-3 px-4 bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-2xl shadow-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2 focus:ring-offset-primary-800">
                         <i class="fas fa-sign-in-alt ml-2"></i>
                         تسجيل الدخول
                     </button>

@@ -79,7 +79,7 @@ class ExamController extends Controller
 
         Exam::create($data);
 
-        return redirect()->route('exams.index')->with('success', 'Exam created successfully.');
+        return redirect()->route('teacher.exams.index')->with('success', 'Exam created successfully.');
     }
 
     // 🟢 المدرس: عرض امتحان معين
@@ -140,7 +140,7 @@ class ExamController extends Controller
 
         $exam->update($data);
 
-        return redirect()->route('exams.index')->with('success', 'Exam updated successfully.');
+        return redirect()->route('teacher.exams.index')->with('success', 'Exam updated successfully.');
     }
 
     // 🟢 المدرس: حذف امتحان
@@ -154,7 +154,7 @@ class ExamController extends Controller
 
         $exam->delete();
 
-        return redirect()->route('exams.index')->with('success', 'Exam deleted successfully.');
+        return redirect()->route('teacher.exams.index')->with('success', 'Exam deleted successfully.');
     }
 
     // 🟢 الطالب: عرض الامتحانات المتاحة له
@@ -221,7 +221,7 @@ public function addQuestion(Request $request, $examId)
         ]);
     }
 
-    return redirect()->route('exams.show', $exam->id)
+    return redirect()->route('teacher.exams.show', $exam->id)
                      ->with('success', 'تم إضافة السؤال بنجاح');
 }
 
@@ -273,7 +273,7 @@ public function quesUpdate(Request $request, $id)
         ]);
     }
 
-    return redirect()->route('exams.show', $question->exam_id)
+    return redirect()->route('teacher.exams.show', $question->exam_id)
                      ->with('success', 'تم تعديل السؤال بنجاح');
 }
 
@@ -289,7 +289,7 @@ public function quesDestroy($id)
     $question->options()->delete();
     $question->delete();
 
-    return redirect()->route('exams.show', $question->exam_id)
+    return redirect()->route('teacher.exams.show', $question->exam_id)
                      ->with('success', 'تم حذف السؤال بنجاح');
 }
 // STUDENT Funcs
@@ -333,7 +333,7 @@ public function start($id)
         ]
     );
 
-    // مدة الامتحان بالدقايق (من قاعدة البيانات)
+    // مدة الامتحان بالدقائق (من قاعدة البيانات)
     $durationMinutes = (int) $exam->duration;
     $durationSeconds = $durationMinutes * 60;
 
@@ -350,7 +350,7 @@ public function start($id)
 
     // لو الوقت انتهى → تسليم تلقائي
     if ($remaining <= 0) {
-        return $this->submitExam($exam->id, true); // تمرير معامل للتسليم التلقائي
+        return $this->submit(new Request(['auto_submit' => '1']), $exam->id);
     }
 
     return view('student.exams.attempt', [
@@ -369,29 +369,29 @@ public function start($id)
 //         'exam_id' => $exam->id,
 //         'student_id' => $student->id,
 //     ])->first();
-
+// 
 //     if (!$attempt) {
 //         return redirect()->route('student.exams.index')
 //             ->with('error', 'لم يتم العثور على محاولة امتحان صحيحة.');
 //     }
-
+// 
 //     // فحص إذا كان التسليم تلقائياً
 //     $autoSubmit = $request->has('auto_submit') && $request->auto_submit == '1';
-    
+//     
 //     // حفظ الإجابات
 //     $this->saveAnswers($request, $attempt);
-    
+//     
 //     // تحديث وقت الانتهاء
 //     $attempt->update([
 //         'ended_at' => now(),
 //         'submitted' => true,
 //         'auto_submitted' => $autoSubmit,
 //     ]);
-
+// 
 //     $message = $autoSubmit 
 //         ? '⏰ تم تسليم الامتحان تلقائياً بعد انتهاء الوقت المحدد.'
 //         : '✅ تم تسليم الامتحان بنجاح!';
-
+// 
 //     return redirect()->route('student.exams.result', $exam->id)
 //         ->with('success', $message);
 // }
@@ -405,9 +405,10 @@ private function saveAnswers(Request $request, $attempt)
             
             ExamAnswer::updateOrCreate([
                 'exam_attempt_id' => $attempt->id,
-                'question_id' => $questionId,
+                'exam_question_id' => $questionId,
             ], [
-                'answer' => $value,
+                'exam_question_option_id' => $value,
+                'student_id' => $attempt->student_id,
             ]);
         }
     }
@@ -533,7 +534,7 @@ public function autoSubmitAjax(Request $request, $id)
         return response()->json(['success' => true, 'redirect' => route('student.exams.result', $exam->id)]);
     }
 
-    // حساب النتيجة اعتمادًا على الإجابات الموجودة في ExamAnswer المرتبطة بهذه المحاولة
+    // حساب النتيجة اعتماداً على الإجابات الموجودة في ExamAnswer المرتبطة بهذه المحاولة
     $answers = ExamAnswer::where('exam_attempt_id', $attempt->id)
         ->get()
         ->keyBy('exam_question_id');
@@ -544,7 +545,7 @@ public function autoSubmitAjax(Request $request, $id)
         $correctOption = $question->options->firstWhere('is_correct', 1);
         if ($saved && $saved->exam_question_option_id && $correctOption && $saved->exam_question_option_id == $correctOption->id) {
             $totalScore += $question->degree;
-            // نحدّث درجة الإجابة إن رغبت
+            // نحدث درجة الإجابة إن رغبت
             $saved->update(['degree' => $question->degree]);
         } else {
             if ($saved) {
@@ -570,7 +571,7 @@ public function autoSubmitAjax(Request $request, $id)
     return response()->json(['success' => true, 'redirect' => route('student.exams.result', $exam->id)]);
 }
 
-// عدّل دالة submit الحالية لتدعم الحالات التي تم حفظ الإجابات فيها مسبقاً
+// عدل دالة submit الحالية لتدعم الحالات التي تم حفظ الإجابات فيها مسبقاً
 public function submit(Request $request, $id)
 {
     $exam = Exam::findOrFail($id);
@@ -609,7 +610,7 @@ public function submit(Request $request, $id)
         }
     }
 
-    // سجل أو حدّث النتيجة
+    // سجل أو حدث النتيجة
     ExamResult::updateOrCreate(
         ['exam_id' => $exam->id, 'student_id' => $student->id],
         ['student_degree' => $totalScore]

@@ -9,11 +9,11 @@
     <div class="py-6">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <!-- معلومات الامتحان -->
-            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                <h3 class="text-2xl font-bold text-gray-800 mb-4">{{ $exam->title }}</h3>
-                <p class="text-gray-600 mb-4">{{ $exam->description ?? 'لا يوجد وصف' }}</p>
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-6">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">{{ $exam->title }}</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ $exam->description ?? 'لا يوجد وصف' }}</p>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
                     <div><span class="font-medium">الدرس:</span> {{ $exam->lesson->title ?? '---' }} ({{ $exam->lesson->course->title ?? '---' }})</div>
                     <div><span class="font-medium">المجموعة:</span> {{ $exam->group->title ?? 'بدون مجموعة' }}</div>
                     <div><span class="font-medium">تاريخ البداية:</span> {{ $exam->start_time ? $exam->start_time->format('Y-m-d H:i') : '---' }}</div>
@@ -26,28 +26,28 @@
             </div>
 
             <!-- الأسئلة -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-                <h4 class="text-xl font-bold text-gray-800 mb-4">الأسئلة</h4>
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">الأسئلة</h4>
 
                 @if($exam->questions->count() > 0)
                     <div class="space-y-6">
                         @foreach($exam->questions as $question)
-                            <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                            <div class="border border-gray-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-md dark:hover:shadow-slate-700/50 transition">
                                 <div class="flex justify-between items-center mb-2">
-                                    <h5 class="text-lg font-semibold">
+                                    <h5 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                                         سؤال {{ $loop->iteration }}: {{ $question->title }}
-                                        <span class="text-sm text-gray-500">({{ $question->degree }} درجة)</span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">({{ $question->degree }} درجة)</span>
                                     </h5>
                                     <div class="flex space-x-2 space-x-reverse">
                                         <!-- تعديل السؤال -->
-                                        <a href="{{ route('questions.edit', $question->id) }}" class="text-blue-500 hover:text-blue-700">
+                                        <a href="{{ route('questions.edit', $question->id) }}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <!-- حذف السؤال -->
                                         <form action="{{ route('questions.destroy', $question->id) }}" method="POST" class="inline delete-form">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-500 hover:text-red-700" onclick="return confirm('هل تريد حذف هذا السؤال؟')">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" onclick="return confirm('هل تريد حذف هذا السؤال؟')">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -55,33 +55,33 @@
                                 </div>
 
                                 @if($question->options->count() > 0)
-                                    <ul class="list-disc list-inside text-gray-700 space-y-1">
+                                    <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
                                         @foreach($question->options as $option)
-                                            <li class="{{ $option->is_correct ? 'font-bold text-green-600' : '' }}">
+                                            <li class="{{ $option->is_correct ? 'font-bold text-green-600 dark:text-green-400' : '' }}">
                                                 {{ $option->title }}
                                                 @if($option->is_correct)
-                                                    <i class="fas fa-check-circle text-green-600 ml-1"></i>
+                                                    <i class="fas fa-check-circle text-green-600 dark:text-green-400 ml-1"></i>
                                                 @endif
                                             </li>
                                         @endforeach
                                     </ul>
                                 @else
-                                    <p class="text-gray-500">لا توجد خيارات لهذا السؤال</p>
+                                    <p class="text-gray-500 dark:text-gray-400">لا توجد خيارات لهذا السؤال</p>
                                 @endif
                             </div>
                         @endforeach
                     </div>
                 @else
                     <div class="text-center py-6">
-                        <i class="fas fa-question-circle text-4xl text-gray-400 mb-3"></i>
-                        <p class="text-gray-500">لا توجد أسئلة مضافة لهذا الامتحان</p>
+                        <i class="fas fa-question-circle text-4xl text-gray-400 dark:text-gray-500 mb-3"></i>
+                        <p class="text-gray-500 dark:text-gray-400">لا توجد أسئلة مضافة لهذا الامتحان</p>
                     </div>
                 @endif
             </div>
 
             <!-- مجموع الدرجات -->
-            <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-4 mt-6 mb-6">
-                <p class="text-gray-800 font-medium">
+            <div class="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-xl p-4 mt-6 mb-6">
+                <p class="text-gray-800 dark:text-yellow-100 font-medium">
                     مجموع درجات الأسئلة:
                     <span class="font-bold">{{ $exam->questions->sum('degree') }}</span>
                     / {{ $exam->total_degree }}
@@ -89,11 +89,11 @@
             </div>
 
             <!-- إضافة سؤال جديد -->
-            <div class="bg-white rounded-2xl shadow-lg p-6 mt-6">
-                <h4 class="text-xl font-bold text-gray-800 mb-4">إضافة سؤال جديد</h4>
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mt-6">
+                <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">إضافة سؤال جديد</h4>
                 <!-- عرض رسائل الخطأ العامة -->
 @if ($errors->any())
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4">
+    <div class="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl mb-4">
         <ul class="list-disc list-inside">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -106,18 +106,18 @@
     @csrf
 
     <div>
-        <label class="block text-gray-700 mb-2 font-medium">عنوان السؤال</label>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">عنوان السؤال</label>
         <input type="text" name="title" value="{{ old('title') }}"
-               class="w-full px-4 py-3 border rounded-xl @error('title') border-red-500 @enderror" required>
+               class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl @error('title') border-red-500 @enderror" required>
         @error('title')
             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
         @enderror
     </div>
 
     <div>
-        <label class="block text-gray-700 mb-2 font-medium">درجة السؤال</label>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">درجة السؤال</label>
         <input type="number" name="degree" min="1" value="{{ old('degree') }}"
-               class="w-full px-4 py-3 border rounded-xl @error('degree') border-red-500 @enderror" required>
+               class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl @error('degree') border-red-500 @enderror" required>
         @error('degree')
             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
         @enderror
@@ -126,17 +126,17 @@
     <div id="options-container" class="space-y-3">
         <div class="flex items-center space-x-3 space-x-reverse option-item">
             <input type="text" name="options[0][title]" value="{{ old('options.0.title') }}" placeholder="النص"
-                   class="flex-1 px-4 py-2 border rounded-xl @error('options.0.title') border-red-500 @enderror" required>
-            <label class="inline-flex items-center">
+                   class="flex-1 px-4 py-2 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl @error('options.0.title') border-red-500 @enderror" required>
+            <label class="inline-flex items-center text-gray-700 dark:text-gray-300">
                 <input type="radio" name="correct_option" value="0"
-                       class="form-radio text-green-600" {{ old('correct_option') == 0 ? 'checked' : '' }} required>
+                       class="form-radio text-green-600 dark:text-green-500 bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600" {{ old('correct_option') == 0 ? 'checked' : '' }} required>
                 <span class="ml-2">إجابة صحيحة</span>
             </label>
         </div>
     </div>
 
     <button type="button" id="add-option"
-            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition">
+            class="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-slate-600 transition">
         <i class="fas fa-plus ml-2"></i> إضافة اختيار
     </button>
 
@@ -160,9 +160,9 @@
                         div.classList.add('flex', 'items-center', 'space-x-3', 'space-x-reverse', 'option-item');
                         div.innerHTML = `
                             <input type="text" name="options[${optionIndex}][title]" placeholder="النص"
-                                   class="flex-1 px-4 py-2 border rounded-xl" required>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="correct_option" value="${optionIndex}" class="form-radio text-green-600" required>
+                                   class="flex-1 px-4 py-2 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl" required>
+                            <label class="inline-flex items-center text-gray-800 dark:text-gray-200">
+                                <input type="radio" name="correct_option" value="${optionIndex}" class="form-radio text-green-600 dark:text-green-500 bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600" required>
                                 <span class="ml-2">إجابة صحيحة</span>
                             </label>
                             <button type="button" class="remove-option text-red-500 hover:text-red-700">
@@ -185,7 +185,7 @@
             <!-- أزرار التحكم -->
             <div class="flex justify-end mt-6 space-x-3 space-x-reverse">
                 <a href="{{ route('exams.index') }}"
-                   class="px-6 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition">
+                   class="px-6 py-2 bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-400 dark:hover:bg-slate-600 transition">
                     <i class="fas fa-arrow-left ml-2"></i> رجوع للقائمة
                 </a>
 

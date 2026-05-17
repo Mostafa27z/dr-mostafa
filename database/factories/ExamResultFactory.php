@@ -15,7 +15,7 @@ class ExamResultFactory extends Factory
     {
         return [
             'exam_id' => Exam::factory(),
-            'student_id' => User::factory(),
+            'student_id' => User::factory()->student(),
             'student_degree' => $this->faker->numberBetween(0, 100),
         ];
     }

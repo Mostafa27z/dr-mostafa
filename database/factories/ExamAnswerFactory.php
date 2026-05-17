@@ -16,7 +16,7 @@ class ExamAnswerFactory extends Factory
     public function definition(): array
     {
         return [
-            'student_id' => User::factory(),
+            'student_id' => User::factory()->student(),
             'exam_question_id' => ExamQuestion::factory(),
             'exam_question_option_id' => ExamQuestionOption::factory(),
             'correct_option_id' => null,

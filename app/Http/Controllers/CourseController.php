@@ -21,6 +21,37 @@ class CourseController extends Controller
         return view('courses.index', compact('courses'));
     }
 
+    /**
+     * Display a listing of courses for the public.
+     */
+    public function publicIndex()
+    {
+        $courses = Course::with('teacher')
+            ->withCount('lessons')
+            ->latest()
+            ->paginate(12);
+
+        return view('pages.courses', compact('courses'));
+    }
+
+    /**
+     * Display the specified course for the public.
+     */
+    public function publicShow(Course $course)
+    {
+        $course->load(['teacher', 'lessons' => function ($query) {
+            $query->orderBy('created_at');
+        }]);
+
+        // Check if user is enrolled (if logged in as student)
+        $enrollment = null;
+        if (Auth::check() && Auth::user()->role === 'student') {
+            $enrollment = $course->enrollments()->where('student_id', Auth::id())->first();
+        }
+
+        return view('pages.course-show', compact('course', 'enrollment'));
+    }
+
     public function create()
     {
         return view('courses.create');
@@ -49,34 +80,34 @@ class CourseController extends Controller
 
         $course->save();
 
-        return redirect()->route('courses.index')->with('success', 'تم إنشاء الدورة بنجاح');
+        return redirect()->route('teacher.courses.index')->with('success', 'تم إنشاء الدورة بنجاح');
     }
 
     public function show(Course $course)
-{
-    // Ensure only the course owner (teacher) can access
-    if ($course->teacher_id !== Auth::id()) {
-        abort(403);
+    {
+        // Ensure only the course owner (teacher) can access
+        if ($course->teacher_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Load relationships
+        $course->load([
+            'lessons' => function ($query) {
+                $query->orderBy('created_at');
+            },
+            'enrollments.student'
+        ]);
+
+        // Pre-calculate some useful stats for the view
+        $stats = [
+            'total_lessons'   => $course->total_lessons,
+            'total_students'  => $course->total_students,
+            'pending_requests'=> $course->pending_enrollments,
+            'price'           => $course->formatted_price,
+        ];
+
+        return view('courses.show', compact('course', 'stats'));
     }
-
-    // Load relationships
-    $course->load([
-        'lessons' => function ($query) {
-            $query->orderBy('created_at');
-        },
-        'enrollments.student'
-    ]);
-
-    // Pre-calculate some useful stats for the view
-    $stats = [
-        'total_lessons'   => $course->total_lessons,
-        'total_students'  => $course->total_students,
-        'pending_requests'=> $course->pending_enrollments,
-        'price'           => $course->formatted_price,
-    ];
-
-    return view('courses.show', compact('course', 'stats'));
-}
 
 
     public function edit(Course $course)
@@ -90,43 +121,43 @@ class CourseController extends Controller
     }
 
     public function update(Request $request, Course $course)
-{
-    if ($course->teacher_id !== Auth::id()) {
-        abort(403);
-    }
-
-    $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric|min:0',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-    ]);
-
-    $course->title = $request->title;
-    $course->description = $request->description;
-    $course->price = $request->price;
-
-    // حذف الصورة لو الطالب اختار "remove_image"
-    if ($request->filled('remove_image')) {
-        if ($course->image) {
-            Storage::disk('public')->delete($course->image);
+    {
+        if ($course->teacher_id !== Auth::id()) {
+            abort(403);
         }
-        $course->image = null;
-    }
 
-    // رفع صورة جديدة
-    if ($request->hasFile('image')) {
-        if ($course->image) {
-            Storage::disk('public')->delete($course->image);
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+        ]);
+
+        $course->title = $request->title;
+        $course->description = $request->description;
+        $course->price = $request->price;
+
+        // حذف الصورة لو الطالب اختار "remove_image"
+        if ($request->filled('remove_image')) {
+            if ($course->image) {
+                Storage::disk('public')->delete($course->image);
+            }
+            $course->image = null;
         }
-        $imagePath = $request->file('image')->store('courses', 'public');
-        $course->image = $imagePath;
+
+        // رفع صورة جديدة
+        if ($request->hasFile('image')) {
+            if ($course->image) {
+                Storage::disk('public')->delete($course->image);
+            }
+            $imagePath = $request->file('image')->store('courses', 'public');
+            $course->image = $imagePath;
+        }
+
+        $course->save();
+
+        return redirect()->route('teacher.courses.index')->with('success', 'تم تحديث الدورة بنجاح');
     }
-
-    $course->save();
-
-    return redirect()->route('courses.index')->with('success', 'تم تحديث الدورة بنجاح');
-}
 
     public function destroy(Course $course)
     {
@@ -140,16 +171,16 @@ class CourseController extends Controller
             Storage::disk('public')->delete($course->image);
         }
 
-        // Delete associated lesson files and videos
+        // Delete associated lesson files
         foreach ($course->lessons as $lesson) {
-            if ($lesson->video) {
-                Storage::disk('public')->delete($lesson->video);
-            }
-            if ($lesson->files) {
-                $files = json_decode($lesson->files, true);
-                if (is_array($files)) {
-                    foreach ($files as $file) {
-                        Storage::disk('public')->delete($file['path']);
+            // Note: video is now a YouTube ID, so no storage deletion needed
+            
+            // Delete attachments stored in local/private storage
+            $attachments = is_string($lesson->files) ? json_decode($lesson->files, true) : $lesson->files;
+            if (is_array($attachments)) {
+                foreach ($attachments as $file) {
+                    if (isset($file['path'])) {
+                        Storage::disk('local')->delete($file['path']);
                     }
                 }
             }
@@ -157,6 +188,6 @@ class CourseController extends Controller
 
         $course->delete();
 
-        return redirect()->route('courses.index')->with('success', 'تم حذف الدورة بنجاح');
+        return redirect()->route('teacher.courses.index')->with('success', 'تم حذف الدورة بنجاح');
     }
 }

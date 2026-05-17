@@ -17,8 +17,8 @@ class CourseEnrollmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'course_id'      => Course::factory(), // automatically create a course
-            'student_id'     => User::factory()->create(['role' => 'student'])->id,
+            'course_id'      => Course::factory(),
+            'student_id'     => User::factory()->student(),
             'status'         => $this->faker->randomElement(['pending', 'approved', 'completed', 'rejected']),
             'enrolled_at'    => now()->subDays(rand(1, 10)),
             'completed_at'   => $this->faker->boolean(30) ? now() : null,

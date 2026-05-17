@@ -16,11 +16,11 @@ class CourseFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence(3),
-            'description' => $this->faker->paragraph(),
+            'title' => fake('ar_SA')->realText(20),
+            'description' => fake('ar_SA')->realText(200),
             'image' => null,
             'price' => $this->faker->randomFloat(2, 100, 1000),
-            'teacher_id' => User::factory()->create(['role' => 'teacher'])->id, // ✅ ensure teacher is a user
+            'teacher_id' => User::factory()->teacher(),
             'created_at' => now(),
             'updated_at' => now(),
         ];

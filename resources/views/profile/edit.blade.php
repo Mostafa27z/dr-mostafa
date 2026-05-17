@@ -1,58 +1,51 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الملف الشخصي</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen font-sans antialiased">
+@php
+    $user = auth()->user();
+    $layout = 'layouts.app'; // Default
 
-    <!-- شريط علوي -->
-    <div class="bg-blue-600 shadow">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <h1 class="text-xl font-bold text-white">الملف الشخصي</h1>
+    if ($user->role === 'teacher') {
+        $layout = 'layouts.teacher';
+    } elseif ($user->role === 'student') {
+        $layout = 'layouts.student';
+    }
+@endphp
 
-            @php
-                $user = auth()->user();
+@extends($layout)
 
-                if ($user->isTeacher()) {
-                    $backRoute = route('dashboard');
-                } elseif ($user->isStudent()) {
-                    $backRoute = route('student.home');
-                } else {
-                    $backRoute = url()->previous();
-                }
-            @endphp
+@section('title', 'الملف الشخصي')
+@section('page-title', 'إعدات الحساب والخصوصية')
 
-            <a href="{{ $backRoute }}" 
-               class="inline-flex items-center px-4 py-2 bg-white text-blue-600 text-sm font-medium rounded-lg shadow hover:bg-gray-100 transition">
-                ⬅ رجوع
-            </a>
+@section('content')
+<div class="max-w-4xl mx-auto space-y-8 text-right pb-12">
+    <!-- Header Summary -->
+    <div class="bg-gradient-to-r from-primary-600 to-primary-800 rounded-[2.5rem] p-8 md:p-12 text-white shadow-xl relative overflow-hidden flex items-center justify-between">
+        <div class="relative z-10">
+            <h2 class="text-3xl font-black mb-3">إعدادات ملفك الشخصي</h2>
+            <p class="text-primary-100 font-bold text-sm max-w-md">تحكم في بياناتك الأساسية، كلمة المرور، وتفضيلات الأمان الخاصة بحسابك.</p>
+        </div>
+        <div class="hidden md:flex w-20 h-20 bg-white/10 rounded-3xl items-center justify-center text-3xl backdrop-blur-md border border-white/20">
+            <i class="fas fa-user-gear"></i>
         </div>
     </div>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto space-y-8">
+    <!-- Forms Container -->
+    <div class="space-y-8 px-4 md:px-0">
+        <!-- Update Profile Info -->
+        <div class="bg-white dark:bg-slate-950 rounded-[2.5rem] p-8 md:p-12 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow relative group">
+            <div class="absolute top-0 right-12 w-24 h-1 bg-primary-500 rounded-b-full"></div>
+            @include('profile.partials.update-profile-information-form')
+        </div>
 
-            {{-- تحديث بيانات الملف الشخصي --}}
-            <div class="p-6 bg-white shadow rounded-2xl border border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">تحديث البيانات الشخصية</h2>
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
+        <!-- Update Password -->
+        <div class="bg-white dark:bg-slate-950 rounded-[2.5rem] p-8 md:p-12 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow relative group">
+            <div class="absolute top-0 right-12 w-24 h-1 bg-amber-500 rounded-b-full"></div>
+            @include('profile.partials.update-password-form')
+        </div>
 
-            {{-- تغيير كلمة المرور --}}
-            <div class="p-6 bg-white shadow rounded-2xl border border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">تغيير كلمة المرور</h2>
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
-
+        <!-- Delete Account (Optional/Danger Zone) -->
+        <div class="bg-rose-50/50 dark:bg-rose-950/10 rounded-[2.5rem] p-8 md:p-12 border border-rose-100 dark:border-rose-900/30 shadow-sm relative group">
+            <div class="absolute top-0 right-12 w-24 h-1 bg-rose-500 rounded-b-full"></div>
+            @include('profile.partials.delete-user-form')
         </div>
     </div>
-
-</body>
-</html>
+</div>
+@endsection

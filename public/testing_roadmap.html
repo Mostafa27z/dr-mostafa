@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خارطة طريق اختبار النظام - منصة السحاب</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .feature-card { transition: all 0.3s ease; }
+        .feature-card:hover { transform: translateY(-5px); }
+        .checkbox-custom:checked + label { text-decoration: line-through; opacity: 0.6; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-300">
+
+    <nav class="sticky top-0 z-50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b dark:border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold text-blue-600 dark:text-blue-400">منصة السحاب <span class="text-xs font-normal text-slate-500">خارطة طريق الاختبار</span></h1>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button id="darkModeToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:inline"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <header class="text-center mb-16">
+            <h2 class="text-4xl font-extrabold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">خارطة الاختبار الشاملة</h2>
+            <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">دليل شامل لاختبار جميع ميزات المنصة لضمان جودة الأداء وتجربة المستخدم.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- القسم 1: الصفحات العامة والتصميم -->
+            <section class="space-y-6">
+                <div class="flex items-center space-x-3 space-x-reverse mb-4">
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <i class="fas fa-globe text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">الصفحات العامة والهوية</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border dark:border-slate-700 feature-card">
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test1" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test1" class="mr-3 cursor-pointer">الصفحة الرئيسية (Navbar - Hero - Features - Footer)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test2" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test2" class="mr-3 cursor-pointer">صفحة جميع الكورسات (للزوار والمستخدمين)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test3" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test3" class="mr-3 cursor-pointer">صفحة المميزات (Responsive & Interactive)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test4" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test4" class="mr-3 cursor-pointer">الوضع الليلي (Dark Mode) في جميع الصفحات</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test5" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test5" class="mr-3 cursor-pointer">استجابة التصميم (Mobile Responsiveness)</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- القسم 2: لوحة التحكم - المعلم -->
+            <section class="space-y-6">
+                <div class="flex items-center space-x-3 space-x-reverse mb-4">
+                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/40 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400">
+                        <i class="fas fa-chalkboard-teacher text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">لوحة تحكم المعلم</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border dark:border-slate-700 feature-card">
+                    <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-4">إدارة المحتوى</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test6" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test6" class="mr-3 cursor-pointer">إضافة كورس جديد (رفع الصور ومعاينتها)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test7" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test7" class="mr-3 cursor-pointer">إدارة الدروس (إضافة - تعديل - حذف)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test8" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test8" class="mr-3 cursor-pointer">تشغيل فيديو الدرس (YouTube - Plyr Player)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test9" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test9" class="mr-3 cursor-pointer">معاينة الفيديو في (Lesson Index & Course Detail)</label>
+                        </div>
+                    </div>
+
+                    <h4 class="font-bold text-blue-600 dark:text-blue-400 mt-6 mb-4">إدارة المجموعات والجلسات</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test10" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test10" class="mr-3 cursor-pointer">إدارة المجموعات (التحكم بالطلاب المنضمين)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test11" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test11" class="mr-3 cursor-pointer">إدارة الجلسات الحية (إنشاء الروابط - عرض الوقي)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test12" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test12" class="mr-3 cursor-pointer">توقيت الجلسات (Relative Time - Arabic Strings)</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- القسم 3: لوحة التحكم - الطالب والاختبارات -->
+            <section class="space-y-6">
+                <div class="flex items-center space-x-3 space-x-reverse mb-4">
+                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400">
+                        <i class="fas fa-user-graduate text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">لوحة تحكم الطالب والمهام</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border dark:border-slate-700 feature-card">
+                    <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-4">تجربة الطالب</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test13" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test13" class="mr-3 cursor-pointer">الانضمام للكورسات (Join Request Flow)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test14" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test14" class="mr-3 cursor-pointer">مشاهدة الدروس (Video Playback Protection)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test15" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test15" class="mr-3 cursor-pointer">عرض الجلسات الحية (انضمام عبر الرابط)</label>
+                        </div>
+                    </div>
+
+                    <h4 class="font-bold text-blue-600 dark:text-blue-400 mt-6 mb-4">الاختبارات والواجبات</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test16" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test16" class="mr-3 cursor-pointer">بدء الاختبار (Countdown Timer)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test17" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test17" class="mr-3 cursor-pointer">تسليم الاختبار (MCQ - DB Integrity Check)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test18" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test18" class="mr-3 cursor-pointer">عرض نتائج الاختبار (Degrees Calculation)</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" id="test19" class="mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 checkbox-custom">
+                            <label for="test19" class="mr-3 cursor-pointer">رفع الواجبات ومتابعة حالة التسليم</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="mt-16 bg-gradient-to-l from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl overflow-hidden relative">
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <h3 class="text-2xl font-bold mb-2">تعليمات الاختبار الهامة</h3>
+                    <ul class="space-y-2 opacity-90 list-disc list-inside text-sm">
+                        <li>تأكد من اختبار الروابط من وجهة نظر المعلم والطالب.</li>
+                        <li>اختبر النظام في متصفحات مختلفة (Chrome, Safari, Firefox).</li>
+                        <li>تأكد من صحة تخزين البيانات في قاعدة البيانات بعد كل عملية تسليم.</li>
+                        <li>فحص سرعة تحميل الصور والفيديوهات.</li>
+                    </ul>
+                </div>
+                <div class="text-white/20">
+                    <i class="fas fa-clipboard-check text-9xl"></i>
+                </div>
+            </div>
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+        </section>
+    </main>
+
+    <footer class="py-12 border-t dark:border-slate-800 text-center">
+        <p class="text-slate-500 text-sm">جميع الحقوق محفوظة &copy; 2026 منصة السحاب</p>
+    </footer>
+
+    <script>
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Save checkbox states to local storage
+        document.querySelectorAll('.checkbox-custom').forEach(checkbox => {
+            const id = checkbox.id;
+            const savedState = localStorage.getItem('test_' + id);
+            if (savedState === 'checked') checkbox.checked = true;
+
+            checkbox.addEventListener('change', () => {
+                localStorage.setItem('test_' + id, checkbox.checked ? 'checked' : 'unchecked');
+            });
+        });
+    </script>
+</body>
+</html>

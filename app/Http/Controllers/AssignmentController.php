@@ -115,7 +115,7 @@ public function deleteFile($id, $index)
 
         Assignment::create($data);
 
-        return redirect()->route('assignments.index')->with('success', 'تم إضافة الواجب بنجاح');
+        return redirect()->route('teacher.assignments.index')->with('success', 'تم إضافة الواجب بنجاح');
     }
 
     // عرض واجب واحد
@@ -173,7 +173,7 @@ public function deleteFile($id, $index)
 
     $assignment->update($data);
 
-    return redirect()->route('assignments.show', $assignment->id)
+    return redirect()->route('teacher.assignments.show', $assignment->id)
                      ->with('success', 'تم تحديث الواجب بنجاح');
 }
 
@@ -183,7 +183,7 @@ public function deleteFile($id, $index)
         $assignment = Assignment::findOrFail($id);
         $assignment->delete();
 
-        return redirect()->route('assignments.index')->with('success', 'تم حذف الواجب');
+        return redirect()->route('teacher.assignments.index')->with('success', 'تم حذف الواجب');
     }
     // 🟢 الطالب: عرض الواجبات المتاحة له
 public function studentIndex()

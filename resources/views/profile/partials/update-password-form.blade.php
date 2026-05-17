@@ -1,49 +1,55 @@
-<section>
-    <header>
-        <h2 class="text-lg font-bold text-gray-900">
+<section class="text-right">
+    <header class="mb-8">
+        <h2 class="text-2xl font-black text-slate-800 dark:text-white leading-tight flex items-center justify-end">
             {{ __('تغيير كلمة المرور') }}
+            <i class="fas fa-lock mr-3 text-amber-500"></i>
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('استخدم كلمة مرور قوية ومعقدة لضمان أمان حسابك.') }}
+        <p class="mt-2 text-sm text-gray-400 font-bold">
+            {{ __('استخدم كلمة مرور قوية ومعقدة لضمان أمان حسابك وحماية بياناتك.') }}
         </p>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('password.update') }}" class="mt-10 space-y-8">
         @csrf
         @method('put')
 
-        <div>
-            <x-input-label for="update_password_current_password" :value="__('كلمة المرور الحالية')" />
-            <x-text-input id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full border-gray-300 rounded-lg" autocomplete="current-password" />
-            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2 text-red-600" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-2">
+                <x-input-label for="update_password_current_password" :value="__('كلمة المرور الحالية')" class="text-xs font-black text-slate-700 dark:text-slate-300 mr-2" />
+                <x-text-input id="update_password_current_password" name="current_password" type="password" class="h-14 block w-full bg-gray-50 dark:bg-slate-900 border-transparent focus:border-amber-500 rounded-2xl px-6 text-sm font-bold text-slate-800 dark:text-white transition-all shadow-inner" autocomplete="current-password" />
+                <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2 text-[10px] font-bold text-rose-500" />
+            </div>
+
+            <div class="space-y-2">
+                <x-input-label for="update_password_password" :value="__('كلمة المرور الجديدة')" class="text-xs font-black text-slate-700 dark:text-slate-300 mr-2" />
+                <x-text-input id="update_password_password" name="password" type="password" class="h-14 block w-full bg-gray-50 dark:bg-slate-900 border-transparent focus:border-amber-500 rounded-2xl px-6 text-sm font-bold text-slate-800 dark:text-white transition-all shadow-inner" autocomplete="new-password" />
+                <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2 text-[10px] font-bold text-rose-500" />
+            </div>
+
+            <div class="space-y-2">
+                <x-input-label for="update_password_password_confirmation" :value="__('تأكيد كلمة المرور الجديدة')" class="text-xs font-black text-slate-700 dark:text-slate-300 mr-2" />
+                <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="h-14 block w-full bg-gray-50 dark:bg-slate-900 border-transparent focus:border-amber-500 rounded-2xl px-6 text-sm font-bold text-slate-800 dark:text-white transition-all shadow-inner" autocomplete="new-password" />
+                <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2 text-[10px] font-bold text-rose-500" />
+            </div>
         </div>
 
-        <div>
-            <x-input-label for="update_password_password" :value="__('كلمة المرور الجديدة')" />
-            <x-text-input id="update_password_password" name="password" type="password" class="mt-1 block w-full border-gray-300 rounded-lg" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2 text-red-600" />
-        </div>
-
-        <div>
-            <x-input-label for="update_password_password_confirmation" :value="__('تأكيد كلمة المرور')" />
-            <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full border-gray-300 rounded-lg" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2 text-red-600" />
-        </div>
-
-        <div class="flex items-center gap-4">
-            <x-primary-button class="bg-[#2563eb] hover:bg-[#1e3a8a] text-white px-4 py-2 rounded-lg">
-                {{ __('حفظ') }}
-            </x-primary-button>
+        <div class="flex items-center flex-row-reverse gap-6 pt-4">
+            <button type="submit" class="px-10 py-4 bg-amber-600 text-white rounded-2xl font-black text-xs shadow-xl shadow-amber-500/20 hover:bg-amber-700 transition-all transform hover:-translate-y-1 active:scale-95">
+                {{ __('تحديث كلمة المرور') }}
+            </button>
 
             @if (session('status') === 'password-updated')
-                <p
+                <div
                     x-data="{ show: true }"
                     x-show="show"
                     x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-green-600"
-                >{{ __('تم تغيير كلمة المرور.') }}</p>
+                    x-init="setTimeout(() => show = false, 3000)"
+                    class="flex items-center gap-2 text-emerald-600 text-[11px] font-black"
+                >
+                    <i class="fas fa-check-circle"></i>
+                    {{ __('تم التغيير بنجاح.') }}
+                </div>
             @endif
         </div>
     </form>

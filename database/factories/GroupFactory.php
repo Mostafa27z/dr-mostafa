@@ -13,11 +13,11 @@ class GroupFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence(3),
-            'description' => $this->faker->paragraph(),
+            'title' => fake('ar_SA')->realText(20),
+            'description' => fake('ar_SA')->realText(150),
             'image' => null,
             'price' => $this->faker->randomFloat(2, 0, 500),
-            'teacher_id' => User::factory(), // يربط جروب بمعلم جديد
+            'teacher_id' => User::factory()->teacher(),
         ];
     }
 }

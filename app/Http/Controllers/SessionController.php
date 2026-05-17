@@ -24,7 +24,7 @@ class SessionController extends Controller
         return view('sessions.index', compact('sessions', 'groups'));
     }
 
-    // عرض فورم إنشاء جلسة
+    // عرض فورمة إنشاء جلسة
     public function create()
     {
         $groups = Group::where('teacher_id', Auth::id())->get();
@@ -55,7 +55,7 @@ class SessionController extends Controller
             'group_id' => $request->group_id,
         ]);
 
-        return redirect()->route('sessions.index')
+        return redirect()->route('teacher.sessions.index')
                          ->with('success', 'تم إنشاء الجلسة بنجاح');
     }
 
@@ -71,7 +71,7 @@ class SessionController extends Controller
         return view('sessions.show', compact('session'));
     }
 
-    // عرض فورم تعديل جلسة
+    // عرض فورمة تعديل جلسة
     public function edit(Session $session)
     {
         // التحقق من أن الجلسة تابعة للمعلم
@@ -112,7 +112,7 @@ class SessionController extends Controller
             'group_id' => $request->group_id,
         ]);
 
-        return redirect()->route('sessions.index')
+        return redirect()->route('teacher.sessions.index')
                          ->with('success', 'تم تحديث الجلسة بنجاح');
     }
 
@@ -126,7 +126,7 @@ class SessionController extends Controller
 
         $session->delete();
 
-        return redirect()->route('sessions.index')
+        return redirect()->route('teacher.sessions.index')
                          ->with('success', 'تم حذف الجلسة بنجاح');
     }
 }

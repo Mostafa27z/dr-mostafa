@@ -234,6 +234,42 @@ public function showCourse($id)
 
     return view('student.courses.show', compact('course'));
 }
+
+public function showGroup($id)
+{
+    $studentId = Auth::id();
+
+    // التأكد أن الطالب عضو معتمد في هذه المجموعة
+    $group = Group::withCount(['members' => function ($query) {
+            $query->where('status', 'approved');
+        }])
+        ->with(['teacher', 'sessions' => function ($q) {
+            $q->orderBy('time', 'asc');
+        }, 'assignments' => function ($q) {
+            $q->latest();
+        }])
+        ->whereHas('members', function ($q) use ($studentId) {
+            $q->where('student_id', $studentId)->where('status', 'approved');
+        })
+        ->findOrFail($id);
+
+    // جلب الطلاب الآخرين في المجموعة
+    $members = \App\Models\GroupMember::where('group_id', $id)
+        ->where('status', 'approved')
+        ->with('student')
+        ->get();
+
+    // جلب الامتحانات المرتبطة بالمجموعة
+    $exams = \App\Models\Exam::where('group_id', $id)->withCount('questions')->latest()->get();
+
+    // جلب محاولات الطالب للامتحانات
+    $examAttempts = \App\Models\ExamAttempt::where('student_id', $studentId)
+        ->whereIn('exam_id', $exams->pluck('id'))
+        ->get()
+        ->keyBy('exam_id');
+
+    return view('student.groups.show', compact('group', 'members', 'exams', 'examAttempts'));
+}
 public function showLesson($courseId, $lessonId)
 {
     $student = Auth::user();

@@ -8,35 +8,35 @@
 
     <div class="py-6">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white rounded-2xl shadow-lg p-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
                 <form action="{{ route('questions.update', $question->id) }}" method="POST" class="space-y-4">
                     @csrf
                     @method('PUT')
 
                     <div>
-                        <label class="block text-gray-700 mb-2 font-medium">عنوان السؤال</label>
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">عنوان السؤال</label>
                         <input type="text" name="title" value="{{ old('title', $question->title) }}"
-                               class="w-full px-4 py-3 border rounded-xl" required>
+                               class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl" required>
                     </div>
 
                     <div>
-                        <label class="block text-gray-700 mb-2 font-medium">درجة السؤال</label>
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">درجة السؤال</label>
                         <input type="number" name="degree" min="1" value="{{ old('degree', $question->degree) }}"
-                               class="w-full px-4 py-3 border rounded-xl" required>
+                               class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl" required>
                     </div>
 
                     <div id="options-container" class="space-y-3">
                         @foreach($question->options as $index => $option)
                             <div class="flex items-center space-x-3 space-x-reverse option-item">
                                 <input type="text" name="options[{{ $index }}][title]" value="{{ $option->title }}"
-                                       class="flex-1 px-4 py-2 border rounded-xl" required>
-                                <label class="inline-flex items-center">
+                                       class="flex-1 px-4 py-2 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl" required>
+                                <label class="inline-flex items-center text-gray-700 dark:text-gray-300">
                                     <input type="radio" name="correct_option" value="{{ $index }}"
                                            {{ $option->is_correct ? 'checked' : '' }}
-                                           class="form-radio text-green-600" required>
+                                           class="form-radio text-green-600 dark:text-green-500 bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600" required>
                                     <span class="ml-2">إجابة صحيحة</span>
                                 </label>
-                                <button type="button" class="remove-option text-red-500 hover:text-red-700">
+                                <button type="button" class="remove-option text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -44,13 +44,13 @@
                     </div>
 
                     <button type="button" id="add-option"
-                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition">
+                            class="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-slate-600 transition">
                         <i class="fas fa-plus ml-2"></i> إضافة اختيار
                     </button>
 
                     <div class="pt-4">
                         <a href="{{ route('exams.show', $question->exam_id) }}"
-                           class="px-6 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition">إلغاء</a>
+                           class="px-6 py-2 bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-400 dark:hover:bg-slate-600 transition">إلغاء</a>
                         <button type="submit"
                                 class="px-6 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition">
                             <i class="fas fa-save ml-2"></i> حفظ التعديلات
@@ -70,12 +70,12 @@
                 div.classList.add('flex', 'items-center', 'space-x-3', 'space-x-reverse', 'option-item');
                 div.innerHTML = `
                     <input type="text" name="options[${optionIndex}][title]" placeholder="النص"
-                           class="flex-1 px-4 py-2 border rounded-xl" required>
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="correct_option" value="${optionIndex}" class="form-radio text-green-600" required>
+                           class="flex-1 px-4 py-2 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl" required>
+                    <label class="inline-flex items-center text-gray-700 dark:text-gray-300">
+                        <input type="radio" name="correct_option" value="${optionIndex}" class="form-radio text-green-600 dark:text-green-500 bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600" required>
                         <span class="ml-2">إجابة صحيحة</span>
                     </label>
-                    <button type="button" class="remove-option text-red-500 hover:text-red-700">
+                    <button type="button" class="remove-option text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
                         <i class="fas fa-trash"></i>
                     </button>
                 `;

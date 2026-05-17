@@ -11,7 +11,7 @@ class ExamQuestionFactory extends Factory
     {
         return [
             'exam_id' => Exam::factory(),
-            'title' => $this->faker->sentence(),
+            'title' => fake('ar_SA')->realText(50) . '؟',
             'degree' => $this->faker->numberBetween(1, 10),
         ];
     }

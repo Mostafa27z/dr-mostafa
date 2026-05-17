@@ -15,7 +15,7 @@ class ExamAttemptFactory extends Factory
     {
         return [
             'exam_id' => Exam::factory(),
-            'student_id' => User::factory(),
+            'student_id' => User::factory()->student(),
             'started_at' => now(),
             'submitted_at' => null,
             'ended_at' => null,

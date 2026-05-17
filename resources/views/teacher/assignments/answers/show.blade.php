@@ -1,13 +1,9 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white leading-tight">
-            <i class="fas fa-file-alt ml-2"></i>
-            تقييم إجابة الطالب
-        </h2>
-    </x-slot>
+@extends('layouts.teacher')
 
-    <div class="py-6">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+@section('title', 'تقييم إجابة الطالب - المدرس')
+@section('page-title', 'تقييم إجابة الطالب')
+
+@section('content')
 
             <!-- تفاصيل الإجابة -->
             <div class="bg-white rounded-2xl shadow-lg p-6">
@@ -83,6 +79,4 @@
                 </form>
             </div>
 
-        </div>
-    </div>
-</x-app-layout>
+@endsection

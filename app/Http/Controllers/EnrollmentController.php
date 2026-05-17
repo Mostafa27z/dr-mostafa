@@ -12,15 +12,18 @@ class EnrollmentController extends Controller
     /**
      * عرض كل الطلبات (للمعلم أو الأدمن)
      */
-    // public function index()
-    // {
-    //     // جلب الدورات الخاصة بالمعلم الحالي
-    //     $courses = Course::where('teacher_id', Auth::id())
-    //         ->with(['enrollments.student', 'enrollments.course'])
-    //         ->get();
+    public function index()
+    {
+        // جلب جميع طلبات التسجيل المرتبطة بدورات المعلم الحالي
+        $enrollments = CourseEnrollment::whereHas('course', function($query) {
+            $query->where('teacher_id', Auth::id());
+        })
+        ->with(['student', 'course'])
+        ->latest()
+        ->paginate(15);
 
-    //     return view('enrollments.index', compact('courses'));
-    // }
+        return view('enrollments.index', compact('enrollments'));
+    }
 
     /**
      * تخزين طلب تسجيل جديد (PENDING)

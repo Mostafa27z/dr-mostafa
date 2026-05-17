@@ -16,17 +16,17 @@ class LessonFactory extends Factory
     public function definition(): array
     {
         return [
-            'title'          => $this->faker->sentence(3),
-            'description'    => $this->faker->paragraph(),
-            'video'          => null,
-            'video_name'     => null,
-            'video_size'     => null,
+            'title'          => fake('ar_SA')->realText(20),
+            'description'    => fake('ar_SA')->realText(150),
+            'video'          => $this->faker->regexify('[A-Za-z0-9_-]{11}'),
+            'video_name'     => 'YouTube Video',
+            'video_size'     => 0,
             'video_duration' => null,
             'files'          => [],
-            'course_id'      => Course::factory(), // linked course with teacher
+            'course_id'      => Course::factory(),
             'order'          => $this->faker->numberBetween(1, 10),
             'is_free'        => $this->faker->boolean(),
-            'status'         => $this->faker->randomElement(['draft', 'active', 'inactive']), // ✅ fixed
+            'status'         => $this->faker->randomElement(['draft', 'active', 'inactive']),
             'published_at'   => now(),
         ];
     }

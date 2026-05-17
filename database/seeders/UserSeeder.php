@@ -13,24 +13,52 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Teacher
+        // Create Default Admin
         User::updateOrCreate(
-            ['email' => 'teacher@example.com'],
+            ['email' => 'admin@mostafa.com'],
             [
-                'name' => 'Dr. Mostafa',
-                'password' => Hash::make('password123'),
+                'name' => 'مدير النظام',
+                'password' => Hash::make('password'),
+                'role' => 'admin'
+            ]
+        );
+
+        // Create Default Teacher
+        User::updateOrCreate(
+            ['email' => 'teacher@mostafa.com'],
+            [
+                'name' => 'الأستاذ الدكتور أحمد علي',
+                'password' => Hash::make('password'),
                 'role' => 'teacher'
             ]
         );
 
-        // Create Student
+        // Create Default Student
         User::updateOrCreate(
-            ['email' => 'student@example.com'],
+            ['email' => 'student@mostafa.com'],
             [
-                'name' => 'Test Student',
-                'password' => Hash::make('password123'),
+                'name' => 'محمد محمود',
+                'password' => Hash::make('password'),
                 'role' => 'student'
             ]
         );
+
+        // Create more teachers
+        $teachers = User::factory(5)->teacher()->create();
+
+        // Create subscriptions for teachers
+        foreach (User::where('role', 'teacher')->get() as $teacher) {
+            \App\Models\Subscription::create([
+                'user_id' => $teacher->id,
+                'plan_name' => 'Standard',
+                'starts_at' => now()->subDays(rand(1, 30)),
+                'ends_at' => now()->addDays(rand(1, 60)),
+                'status' => 'active',
+                'price' => 500.00
+            ]);
+        }
+
+        // Create more students
+        User::factory(20)->student()->create();
     }
 }

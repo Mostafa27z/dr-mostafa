@@ -11,8 +11,8 @@ class AssignmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence,
-            'description' => $this->faker->paragraph,
+            'title' => fake('ar_SA')->realText(30),
+            'description' => fake('ar_SA')->realText(150),
             'files' => [],
             'deadline' => now()->addDays(3),
             'is_open' => false,

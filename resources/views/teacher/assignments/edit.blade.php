@@ -1,14 +1,10 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white leading-tight">
-            <i class="fas fa-edit ml-2"></i>
-            تعديل الواجب
-        </h2>
-    </x-slot>
+@extends('layouts.teacher')
 
-    <div class="py-6">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white rounded-2xl shadow-lg p-6">
+@section('title', 'تعديل الواجب - المدرس')
+@section('page-title', 'تعديل الواجب')
+
+@section('content')
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
                 <form id="update-assignment-form"
                       action="{{ route('assignments.update', $assignment->id) }}" 
                       method="POST" enctype="multipart/form-data" 
@@ -18,33 +14,33 @@
 
                     <!-- العنوان -->
                     <div>
-                        <label class="block text-gray-700 mb-2 font-medium">عنوان الواجب</label>
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">عنوان الواجب</label>
                         <input type="text" name="title" value="{{ old('title', $assignment->title) }}"
-                            class="w-full px-4 py-3 border rounded-xl" required>
+                            class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl" required>
                     </div>
 
                     <!-- الوصف -->
                     <div>
-                        <label class="block text-gray-700 mb-2 font-medium">الوصف</label>
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">الوصف</label>
                         <textarea name="description" rows="3" 
-                                  class="w-full px-4 py-3 border rounded-xl">{{ old('description', $assignment->description) }}</textarea>
+                                  class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl">{{ old('description', $assignment->description) }}</textarea>
                     </div>
 
                     <!-- رفع الملفات -->
                     <div>
-                        <label class="block text-gray-700 mb-2 font-medium">الملفات (يمكن رفع أكثر من ملف)</label>
-                        <input type="file" name="files[]" multiple class="w-full px-4 py-2 border rounded-xl">
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">الملفات (يمكن رفع أكثر من ملف)</label>
+                        <input type="file" name="files[]" multiple class="w-full px-4 py-2 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl">
                     </div>
 
                     <!-- عرض الملفات الحالية مع أزرار حذف عبر AJAX -->
                     @if($assignment->files && count($assignment->files) > 0)
                         <div class="mt-4">
-                            <label class="block text-gray-700 mb-2 font-medium">الملفات الحالية</label>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">الملفات الحالية</label>
                             <ul id="assignment-files-list" class="list-none space-y-2">
                                 @foreach($assignment->files as $index => $file)
-                                    <li data-index="{{ $index }}" class="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg" id="file-item-{{ $index }}">
+                                    <li data-index="{{ $index }}" class="flex items-center justify-between bg-gray-50 dark:bg-slate-700/50 px-3 py-2 rounded-lg" id="file-item-{{ $index }}">
                                         <div>
-                                            <a href="{{ asset('storage/' . $file) }}" target="_blank" class="text-blue-600 hover:underline">
+                                            <a href="{{ asset('storage/' . $file) }}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
                                                 {{ basename($file) }}
                                             </a>
                                         </div>
@@ -66,8 +62,8 @@
                     <!-- المجموعة والدرس -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-700 mb-2 font-medium">المجموعة</label>
-                            <select name="group_id" class="w-full px-4 py-3 border rounded-xl">
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">المجموعة</label>
+                            <select name="group_id" class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl">
                                 <option value="">بدون مجموعة</option>
                                 @foreach($groups as $group)
                                     <option value="{{ $group->id }}" {{ $assignment->group_id == $group->id ? 'selected' : '' }}>
@@ -77,8 +73,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-gray-700 mb-2 font-medium">الدرس</label>
-                            <select name="lesson_id" class="w-full px-4 py-3 border rounded-xl">
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">الدرس</label>
+                            <select name="lesson_id" class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl">
                                 <option value="">بدون درس</option>
                                 @foreach($lessons as $lesson)
                                     <option value="{{ $lesson->id }}" {{ $assignment->lesson_id == $lesson->id ? 'selected' : '' }}>
@@ -92,23 +88,23 @@
                     <!-- الدرجة والموعد النهائي -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-700 mb-2 font-medium">الدرجة الكلية</label>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">الدرجة الكلية</label>
                             <input type="number" name="total_mark" 
                                    value="{{ old('total_mark', $assignment->total_mark) }}"
-                                   class="w-full px-4 py-3 border rounded-xl" required>
+                                   class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl" required>
                         </div>
                         <div>
-                            <label class="block text-gray-700 mb-2 font-medium">الموعد النهائي</label>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2 font-medium">الموعد النهائي</label>
                             <input type="datetime-local" name="deadline" 
                                    value="{{ old('deadline', $assignment->deadline ? $assignment->deadline->format('Y-m-d\TH:i') : '') }}"
-                                   class="w-full px-4 py-3 border rounded-xl">
+                                   class="w-full px-4 py-3 border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 rounded-xl">
                         </div>
                     </div>
 
                     <!-- فتح الواجب -->
                     <div class="flex items-center space-x-4 space-x-reverse">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" name="is_open" value="1" {{ $assignment->is_open ? 'checked' : '' }}>
+                        <label class="inline-flex items-center text-gray-700 dark:text-gray-300">
+                            <input type="checkbox" name="is_open" value="1" {{ $assignment->is_open ? 'checked' : '' }} class="form-checkbox text-blue-600 bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600">
                             <span class="ml-2">فتح الواجب</span>
                         </label>
                     </div>
@@ -116,7 +112,7 @@
                     <!-- أزرار -->
                     <div class="pt-4 flex justify-end">
                         <a href="{{ route('assignments.index') }}" 
-                           class="px-6 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 mr-3">
+                           class="px-6 py-2 bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-400 dark:hover:bg-slate-600 mr-3">
                             رجوع
                         </a>
                         <button id="save-assignment-btn" type="submit" 
@@ -126,8 +122,7 @@
                     </div>
                 </form>
             </div>
-        </div>
-    </div>
+
 
     <!-- CSRF token for JS -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -186,4 +181,4 @@
             });
         });
     </script>
-</x-app-layout>
+@endsection

@@ -25,6 +25,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'is_active',
+        'disabled_until',
     ];
 
     /**
@@ -47,7 +49,33 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'disabled_until' => 'datetime',
         ];
+    }
+
+    /**
+     * Check if user is active.
+     */
+    public function isActive(): bool
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+
+        if ($this->disabled_until && $this->disabled_until->isFuture()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if user is disabled.
+     */
+    public function isDisabled(): bool
+    {
+        return !$this->isActive();
     }
 
     /**
@@ -64,6 +92,39 @@ class User extends Authenticatable
     public function isStudent(): bool
     {
         return $this->role === 'student';
+    }
+
+    /**
+     * Check if user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Get the subscription for the teacher.
+     */
+    public function subscription(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Get the current active subscription.
+     */
+    public function latestSubscription()
+    {
+        return $this->subscription()->orderBy('ends_at', 'desc')->first();
+    }
+
+    /**
+     * Check if user is subscribed.
+     */
+    public function isSubscribed(): bool
+    {
+        $sub = $this->latestSubscription();
+        return $sub && $sub->status === 'active' && ($sub->ends_at === null || $sub->ends_at->isFuture());
     }
 
     /**

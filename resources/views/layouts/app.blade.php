@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'منصة الدكتور مصطفى طنطاوي') }}</title>
+    <title>{{ config('app.name', 'منصة السحاب') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -47,6 +47,8 @@
             }
         }
     </script>
+    
+    @stack('styles')
     
     <style>
         body {
@@ -276,8 +278,8 @@
                     <div class="mx-auto w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center mb-3 floating">
                         <i class="fas fa-user-graduate text-2xl"></i>
                     </div>
-                    <h3 class="text-lg font-semibold">د. مصطفى طنطاوي</h3>
-                    <p class="text-sm text-white/80">أستاذ المواد الشرعية</p>
+                    <h3 class="text-lg font-semibold">{{ config('app.name') }}</h3>
+                    <p class="text-sm text-white/80">منصة تعليمية متكاملة</p>
                 </div>
                 
                 <!-- قائمة التنقل -->
@@ -374,8 +376,8 @@
                     <div class="mx-auto w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center mb-3">
                         <i class="fas fa-user-graduate text-xl"></i>
                     </div>
-                    <h3 class="text-base font-semibold">د. مصطفى طنطاوي</h3>
-                    <p class="text-xs text-white/80">أستاذ المواد الشرعية</p>
+                    <h3 class="text-base font-semibold">{{ config('app.name') }}</h3>
+                    <p class="text-xs text-white/80">منصة تعليمية متكاملة</p>
                 </div>
                 
                 <!-- قائمة التنقل -->
@@ -471,8 +473,8 @@
                             <!-- شعار -->
                             <a href="{{ url('/') }}" class="flex items-center space-x-2 space-x-reverse min-w-0">
                                 <i class="fas fa-graduation-cap text-lg sm:text-2xl flex-shrink-0"></i>
-                                <span class="responsive-heading font-bold truncate">
-                                    <span class="hidden sm:inline">منصة الدكتور مصطفى طنطاوي</span>
+                                 <span class="responsive-heading font-bold truncate">
+                                    <span class="hidden sm:inline">{{ config('app.name') }}</span>
                                     <span class="sm:hidden">المنصة</span>
                                 </span>
                             </a>
@@ -492,7 +494,7 @@
                                 <button class="nav-button flex items-center hover:text-yellow-300 transition-colors focus:outline-none focus-ring rounded-lg" 
                                         id="user-menu-button">
                                     <i class="fas fa-user-circle text-xl ml-2"></i>
-                                    <span class="responsive-text font-medium hidden lg:block">مرحباً، د. مصطفى</span>
+                                    <span class="responsive-text font-medium hidden lg:block">مرحباً بك</span>
                                     <i class="fas fa-chevron-down ml-1 text-xs"></i>
                                 </button>
 
@@ -664,5 +666,6 @@
             });
         });
     </script>
+    @stack('scripts')
 </body>
 </html>
