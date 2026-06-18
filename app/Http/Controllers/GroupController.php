@@ -281,40 +281,37 @@ class GroupController extends Controller
     }
 
     /**
-     * Get group details with members
+     * Get group details with members and all sessions
+     * Shows all sessions (upcoming, live, completed)
      */
     public function show(Group $group)
-{
-    // التحقق إن المعلم الحالي هو صاحب الجروب
-    if ($group->teacher_id !== Auth::id()) {
-        abort(403, 'غير مصرح لك بعرض هذه المجموعة');
+    {
+        // التحقق إن المعلم الحالي هو صاحب الجروب
+        if ($group->teacher_id !== Auth::id()) {
+            abort(403, 'غير مصرح لك بعرض هذه المجموعة');
+        }
+
+        // تحميل العلاقات
+        $group->loadCount(['students', 'sessions', 'assignments']);
+        $group->load(['members.student']);
+
+        // عرض جميع الجلسات (قادمة، جارية، منتهية) مرتبة بالوقت من الأحدث
+        $allSessions = $group->sessions()
+            ->orderBy('time', 'desc')  // الأحدث أولاً
+            ->get();
+
+        // الواجبات الحديثة (أحدث 5 واجبات)
+        $recentAssignments = $group->assignments()
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('groups.show', compact(
+            'group',
+            'allSessions',
+            'recentAssignments'
+        ));
     }
-
-    // تحميل العلاقات
-    $group->loadCount(['students', 'sessions', 'assignments']);
-$group->load(['members.student']);
-
-
-    // الجلسات القادمة (مرتبة بالوقت)
-    $upcomingSessions = $group->sessions()
-        ->where('time', '>=', now())
-        ->orderBy('time', 'asc')
-        ->take(5)
-        ->get();
-
-    // الواجبات الحديثة (أحدث 5 واجبات)
-    $recentAssignments = $group->assignments()
-        ->orderBy('created_at', 'desc')
-        ->take(5)
-        ->get();
-
-    return view('groups.show', compact(
-        'group',
-        'upcomingSessions',
-        'recentAssignments'
-    ));
-}
-
 
     /**
      * Remove a student from group
@@ -363,46 +360,6 @@ $group->load(['members.student']);
 
         return redirect()->back()->with('success', 'تم إرسال طلب الانضمام بنجاح');
     }
-
-    /**
-     * Get student's groups
-     */
-    // public function myGroups()
-    // {
-    //     $this->ensureStudent();
-        
-    //     $student = Auth::user();
-        
-    //     $memberGroups = GroupMember::where('student_id', $student->id)
-    //         ->where('status', 'approved')
-    //         ->with(['group.teacher', 'group.sessions'])
-    //         ->get();
-
-    //     $pendingRequests = GroupMember::where('student_id', $student->id)
-    //         ->where('status', 'pending')
-    //         ->with('group')
-    //         ->get();
-
-    //     return view('student.groups', compact('memberGroups', 'pendingRequests'));
-    // }
-
-    /**
-     * Remove a student from group
-     */
-    // public function removeMember(Group $group, GroupMember $member)
-    // {
-    //     $this->ensureTeacher();
-        
-    //     // Check if the group belongs to the authenticated teacher
-    //     if ($group->teacher_id !== Auth::id()) {
-    //         abort(403, 'غير مصرح لك بإزالة أعضاء من هذه المجموعة');
-    //     }
-
-    //     $member->delete();
-
-    //     return redirect()->back()
-    //         ->with('success', 'تم إزالة الطالب من المجموعة بنجاح');
-    // }
 
     /**
      * Get group statistics

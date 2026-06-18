@@ -87,7 +87,11 @@
                     <i class="fas fa-users ml-3 w-5 text-center"></i>
                     المجموعات
                 </a>
-
+                <a href="{{ route('teacher.sessions.index') }}"
+                class="flex items-center px-6 py-3 hover:bg-slate-800 transition {{ request()->routeIs('teacher.sessions.*') ? 'bg-slate-800 border-r-4 border-primary-500 text-primary-400 font-bold' : 'text-gray-400' }}">
+                    <i class="fas fa-calendar-alt ml-3 w-5 text-center"></i>
+                    الجلسات
+                </a>
                 <div class="px-6 py-2 mt-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     التقييم والتواصل
                 </div>

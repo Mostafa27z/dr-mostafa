@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage;
+
 class Group extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
+    /**
+     * The attributes that are mass assignable
+     */
     protected $fillable = [
         'title',
         'description',
@@ -19,6 +22,9 @@ class Group extends Model
         'teacher_id'
     ];
 
+    /**
+     * The attributes that should be cast
+     */
     protected $casts = [
         'price' => 'decimal:2',
         'created_at' => 'datetime',
@@ -26,67 +32,112 @@ class Group extends Model
         'deleted_at' => 'datetime'
     ];
 
+    /**
+     * The accessors to append to model's array form
+     */
     protected $appends = [
         'image_url',
         'formatted_price'
     ];
 
-    /** Teacher */
+    /**
+     * ==================== RELATIONSHIPS ====================
+     */
+
+    /**
+     * Get the teacher that owns the group
+     */
     public function teacher()
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    /** All group members (pivot records) */
+    /**
+     * Get all group members (pivot records)
+     */
     public function members()
     {
         return $this->hasMany(GroupMember::class);
     }
 
-    /** Approved students (User models) */
+    /**
+     * Get approved students only
+     */
     public function students()
     {
-        return $this->belongsToMany(User::class, 'group_members', 'group_id', 'student_id')
-                    ->withPivot('status')
-                    ->wherePivot('status', 'approved');
+        return $this->belongsToMany(
+            User::class,
+            'group_members',
+            'group_id',
+            'student_id'
+        )
+        ->withPivot('status')
+        ->wherePivot('status', 'approved');
     }
 
-    /** Pending join requests */
+    /**
+     * Get pending join requests
+     */
     public function pendingRequests()
     {
-        return $this->hasMany(GroupMember::class)->where('status', 'pending');
+        return $this->hasMany(GroupMember::class)
+            ->where('status', 'pending');
     }
 
-    /** Sessions */
+    /**
+     * Get group sessions
+     */
     public function sessions()
     {
         return $this->hasMany(GroupSession::class);
     }
 
-    /** Assignments */
+    /**
+     * Get group assignments
+     */
     public function assignments()
     {
         return $this->hasMany(Assignment::class);
     }
 
-    /** Image URL accessor */
-    public function getImageUrlAttribute()
+    /**
+     * ==================== ACCESSORS ====================
+     */
+
+    /**
+     * Get the full URL to the group image
+     * Uses Storage::url() which respects APP_URL configuration
+     */
+    public function getImageUrlAttribute(): ?string
     {
-        return $this->image
-            ? Storage::disk('public')->url($this->image)
-            : asset('images/default-group.png');
+        if (!$this->image) {
+            return asset('images/default-group.png');
+        }
+
+        // This respects APP_URL from .env file
+        return Storage::url($this->image);
     }
 
-    /** Price formatting */
-    public function getFormattedPriceAttribute()
+    /**
+     * Get formatted price with currency
+     */
+    public function getFormattedPriceAttribute(): string
     {
-        return $this->price > 0
-            ? number_format($this->price, 2) . ' جنيه'
-            : 'مجاني';
+        if ($this->price > 0) {
+            return number_format($this->price, 2) . ' ج.م';
+        }
+
+        return 'مجاني';
     }
 
-    /** Check membership */
-    public function hasMember($studentId)
+    /**
+     * ==================== HELPER METHODS ====================
+     */
+
+    /**
+     * Check if a student is an approved member
+     */
+    public function hasMember($studentId): bool
     {
         return $this->members()
             ->where('student_id', $studentId)
@@ -94,8 +145,10 @@ class Group extends Model
             ->exists();
     }
 
-    /** Check pending request */
-    public function hasPendingRequest($studentId)
+    /**
+     * Check if a student has a pending join request
+     */
+    public function hasPendingRequest($studentId): bool
     {
         return $this->members()
             ->where('student_id', $studentId)
@@ -103,23 +156,59 @@ class Group extends Model
             ->exists();
     }
 
-    /** Get member status */
-    public function getMemberStatus($studentId)
+    /**
+     * Get member status (approved, pending, rejected)
+     */
+    public function getMemberStatus($studentId): ?string
     {
-        $member = $this->members()
+        return $this->members()
             ->where('student_id', $studentId)
-            ->first();
-
-        return $member?->status;
+            ->first()?->status;
     }
 
-    /** Scope filter by teacher */
+    /**
+     * Get total revenue from this group
+     */
+    public function getTotalRevenue(): int|float
+    {
+        return $this->students()->count() * $this->price;
+    }
+
+    /**
+     * Get approved members count
+     */
+    public function getApprovedMembersCount(): int
+    {
+        return $this->members()
+            ->where('status', 'approved')
+            ->count();
+    }
+
+    /**
+     * Get pending requests count
+     */
+    public function getPendingRequestsCount(): int
+    {
+        return $this->members()
+            ->where('status', 'pending')
+            ->count();
+    }
+
+    /**
+     * ==================== SCOPES ====================
+     */
+
+    /**
+     * Scope to filter groups by teacher
+     */
     public function scopeByTeacher($query, $teacherId)
     {
         return $query->where('teacher_id', $teacherId);
     }
 
-    /** Scope search */
+    /**
+     * Scope to search groups
+     */
     public function scopeSearch($query, $searchTerm)
     {
         return $query->where(function ($q) use ($searchTerm) {
@@ -128,20 +217,35 @@ class Group extends Model
         });
     }
 
-    /** Total revenue */
-    public function getTotalRevenue()
+    /**
+     * Scope to get active groups only
+     */
+    public function scopeActive($query)
     {
-        return $this->students()->count() * $this->price;
+        return $query->whereNotNull('teacher_id');
     }
 
-    /** Boot (delete image on group delete) */
+    /**
+     * ==================== EVENTS ====================
+     */
+
+    /**
+     * Boot method - handles model events
+     * Deletes the image file when a group is deleted
+     */
     protected static function boot()
     {
         parent::boot();
 
         static::deleting(function ($group) {
-            if ($group->image) {
-                Storage::disk('public')->delete($group->image);
+            if ($group->image && Storage::exists($group->image)) {
+                Storage::delete($group->image);
+            }
+        });
+
+        static::forceDeleted(function ($group) {
+            if ($group->image && Storage::exists($group->image)) {
+                Storage::delete($group->image);
             }
         });
     }

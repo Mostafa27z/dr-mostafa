@@ -270,20 +270,4 @@
 </style>
 @endsection
 
-<style>
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 10px;
-}
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #1e293b;
-}
-</style>
-@endsection
+

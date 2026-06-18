@@ -160,8 +160,24 @@
                             {{ \Carbon\Carbon::parse($session->time)->locale('ar')->translatedFormat('l، j F - h:i A') }}
                         </span>
                     </div>
-                    @if($minutesUntilSession <= 60 && $minutesUntilSession > 0)
-                        <span class="bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[9px] font-black px-2.5 py-1 rounded-full animate-pulse uppercase tracking-widest">تبدأ خلال ساعة</span>
+                    
+                    {{-- عرض الدقائق المتبقية أو الساعات --}}
+                    @if($minutesUntilSession > 0)
+                        @if($minutesUntilSession <= 60)
+                            <span class="bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[9px] font-black px-2.5 py-1 rounded-full animate-pulse uppercase tracking-widest flex items-center gap-1">
+                                <i class="fas fa-hourglass-end"></i>
+                                @if($minutesUntilSession >= 1)
+                                    تبدأ خلال {{ (int)$minutesUntilSession }} دقيقة
+                                @else
+                                    تبدأ الآن!
+                                @endif
+                            </span>
+                        @else
+                            <span class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest flex items-center gap-1">
+                                <i class="fas fa-calendar-check"></i>
+                                تبدأ بعد {{ floor($minutesUntilSession / 60) }}س
+                            </span>
+                        @endif
                     @endif
                 </div>
 
