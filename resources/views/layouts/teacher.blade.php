@@ -190,6 +190,20 @@
                     </div>
                 @endif
 
+                @if($errors->any())
+                    <div class="mb-6 p-4 bg-red-100 border-r-4 border-red-500 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded-xl shadow-lg text-right" dir="rtl">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-exclamation-circle ml-3 text-lg"></i>
+                            <span class="font-bold">يرجى تصحيح الأخطاء التالية:</span>
+                        </div>
+                        <ul class="list-disc list-inside mr-6 font-bold text-sm">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="container mx-auto">
                     @yield('content')
                 </div>

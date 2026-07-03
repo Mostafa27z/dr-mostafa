@@ -22,13 +22,13 @@
             @foreach($exams as $exam)
                 <div class="bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm p-6 flex flex-col hover:shadow-md transition-all group border-b-4 
                     @if($exam->results->count() > 0) border-b-green-500 
-                    @elseif(now()->between($exam->start_time, $exam->end_time)) border-b-primary-500 
+                    @elseif($exam->is_open) border-b-primary-500 
                     @else border-b-slate-200 @endif">
                     
                     <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-50 dark:border-slate-900 border-dashed">
                         @if($exam->results->count() > 0)
                             <span class="bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-black px-2 py-1 rounded uppercase">تم الإكمال</span>
-                        @elseif(now()->between($exam->start_time, $exam->end_time))
+                        @elseif($exam->is_open)
                             <span class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] font-black px-2 py-1 rounded uppercase animate-pulse">متاح الآن</span>
                         @else
                             <span class="bg-slate-50 dark:bg-slate-900 text-slate-400 text-[10px] font-black px-2 py-1 rounded uppercase">غير متاح</span>
@@ -66,14 +66,14 @@
                                 <span class="text-xs font-black text-green-700 dark:text-green-300">{{ $result->student_degree }} / {{ $exam->total_degree }}</span>
                             </div>
                         @else
-                            @if(now()->between($exam->start_time, $exam->end_time))
+                            @if($exam->is_open)
                                 <a href="{{ route('student.exams.start', $exam->id) }}"
                                    class="flex items-center justify-center w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all shadow-sm shadow-primary-200 dark:shadow-none">
                                     <i class="fas fa-paper-plane ml-2"></i> بدء الامتحان الآن
                                 </a>
                             @else
                                 <div class="flex items-center justify-center w-full bg-slate-50 dark:bg-slate-900 text-slate-400 px-4 py-2.5 rounded-xl text-[10px] font-black border border-gray-100 dark:border-slate-800 italic">
-                                    <i class="fas fa-lock ml-2 text-[10px]"></i> الامتحان خارج وقت الصلاحية
+                                    <i class="fas fa-lock ml-2 text-[10px]"></i> الامتحان غير متاح حالياً
                                 </div>
                             @endif
                         @endif

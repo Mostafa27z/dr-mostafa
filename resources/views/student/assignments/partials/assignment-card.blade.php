@@ -1,16 +1,16 @@
 {{-- كارت عرض الواجب داخل قائمة الواجبات --}}
 <div class="bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm p-6 hover:shadow-md transition-all group flex flex-col h-full border-b-4 
-    @if($assignment->deadline && $assignment->deadline->isPast()) border-b-red-500 
-    @elseif($assignment->is_open) border-b-green-500 
-    @else border-b-orange-500 @endif">
+    @if($assignment->is_open) border-b-green-500 
+    @elseif($assignment->deadline && $assignment->deadline->isPast()) border-b-red-500 
+    @else border-b-slate-500 @endif">
     
     <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-50 dark:border-slate-900 border-dashed">
-        @if($assignment->deadline && $assignment->deadline->isPast())
-            <span class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-black px-2 py-1 rounded uppercase">منتهي</span>
-        @elseif($assignment->is_open)
+        @if($assignment->is_open)
             <span class="bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-black px-2 py-1 rounded uppercase">متاح للتسليم</span>
+        @elseif($assignment->deadline && $assignment->deadline->isPast())
+            <span class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-black px-2 py-1 rounded uppercase">منتهي</span>
         @else
-            <span class="bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-black px-2 py-1 rounded uppercase">لم يبدأ بعد</span>
+            <span class="bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 text-[10px] font-black px-2 py-1 rounded uppercase">مغلق</span>
         @endif
         
         <div class="flex items-center text-[10px] font-bold text-gray-400">

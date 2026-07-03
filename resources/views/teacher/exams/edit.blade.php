@@ -46,7 +46,8 @@
             <div>
                 <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">الدرس <span class="text-rose-500">*</span></label>
                 <div class="relative group/input">
-                    <select name="lesson_id" class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-amber-500 dark:focus:border-amber-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none appearance-none cursor-pointer" required>
+                    <select name="lesson_id" class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-amber-500 dark:focus:border-amber-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none appearance-none cursor-pointer">
+                        <option value="">بدون درس</option>
                         @foreach($lessons as $lesson)
                             <option value="{{ $lesson->id }}" {{ old('lesson_id', $exam->lesson_id) == $lesson->id ? 'selected' : '' }}>
                                 {{ $lesson->title }} ({{ $lesson->course->title }})
@@ -74,16 +75,16 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">تاريخ البداية</label>
+                    <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">تاريخ البداية <span class="text-rose-500">*</span></label>
                     <div class="relative group/input">
-                        <input type="datetime-local" name="start_time" value="{{ old('start_time', $exam->start_time ? $exam->start_time->format('Y-m-d\TH:i') : '') }}" class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-amber-500 dark:focus:border-amber-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none">
+                        <input type="datetime-local" name="start_time" value="{{ old('start_time', $exam->start_time ? $exam->start_time->format('Y-m-d\TH:i') : '') }}" class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-amber-500 dark:focus:border-amber-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none" required>
                         <i class="fas fa-clock absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 dark:text-slate-700 group-focus-within/input:text-amber-500 transition-colors"></i>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">تاريخ الانتهاء</label>
+                    <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">تاريخ الانتهاء <span class="text-rose-500">*</span></label>
                     <div class="relative group/input">
-                        <input type="datetime-local" name="end_time" value="{{ old('end_time', $exam->end_time ? $exam->end_time->format('Y-m-d\TH:i') : '') }}" class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-amber-500 dark:focus:border-amber-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none">
+                        <input type="datetime-local" name="end_time" value="{{ old('end_time', $exam->end_time ? $exam->end_time->format('Y-m-d\TH:i') : '') }}" class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-amber-500 dark:focus:border-amber-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none" required>
                         <i class="fas fa-stopwatch absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 dark:text-slate-700 group-focus-within/input:text-amber-500 transition-colors"></i>
                     </div>
                 </div>

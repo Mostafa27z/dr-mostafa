@@ -60,11 +60,10 @@
                     </div>
 
                     @php
-                        $canEdit = !$assignment->deadline || !$assignment->deadline->isPast();
                         $isReviewed = isset($assignment->answers[0]) && $assignment->answers[0]->teacher_degree !== null;
                     @endphp
 
-                    @if($assignment->is_open && $canEdit && !$isReviewed)
+                    @if($assignment->is_open && !$isReviewed)
                         <div class="pt-6 border-t border-gray-50 dark:border-slate-900 border-dashed">
                             <h3 class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest mr-1">✏️ تحديث الإجابة</h3>
                             <form action="{{ route('student.assignments.resubmit', $assignment->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
@@ -85,22 +84,13 @@
                             <i class="fas fa-user-tie ml-2 text-base"></i>
                             تم مراجعة الحل من قبل المعلم، لا يمكنك تعديل الإجابة حالياً.
                         </div>
-                    @elseif($assignment->deadline && $assignment->deadline->isPast())
+                    @elseif(!$assignment->is_open)
                         <div class="p-4 rounded-xl bg-orange-50/50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 flex items-center text-[10px] font-black text-orange-600 dark:text-orange-400">
                             <i class="fas fa-clock-rotate-left ml-2 text-base"></i>
                             انتهى الوقت المسموح للتعديل (الموعد النهائي قد مضى).
                         </div>
                     @endif
                 </div>
-            </div>
-
-        @elseif($assignment->deadline && $assignment->deadline->isPast())
-            <div class="bg-white dark:bg-slate-950 border border-red-100 dark:border-red-900/30 rounded-2xl shadow-sm p-8 text-center border-r-4 border-r-red-500">
-                <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-                    <i class="fas fa-calendar-xmark text-2xl"></i>
-                </div>
-                <h3 class="text-sm font-black text-slate-800 dark:text-white mb-1">عذراً، انتهى وقت التسليم</h3>
-                <p class="text-[10px] font-bold text-gray-400">لقد تجاوزت الموعد النهائي المحدد لتسليم هذا الواجب</p>
             </div>
 
         @elseif($assignment->is_open)
@@ -114,6 +104,15 @@
                 <div class="p-6">
                     @include('student.assignments.partials.upload-form', ['assignment' => $assignment])
                 </div>
+            </div>
+
+        @elseif($assignment->deadline && $assignment->deadline->isPast())
+            <div class="bg-white dark:bg-slate-950 border border-red-100 dark:border-red-900/30 rounded-2xl shadow-sm p-8 text-center border-r-4 border-r-red-500">
+                <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                    <i class="fas fa-calendar-xmark text-2xl"></i>
+                </div>
+                <h3 class="text-sm font-black text-slate-800 dark:text-white mb-1">عذراً، انتهى وقت التسليم</h3>
+                <p class="text-[10px] font-bold text-gray-400">لقد تجاوزت الموعد النهائي المحدد لتسليم هذا الواجب</p>
             </div>
 
         @else

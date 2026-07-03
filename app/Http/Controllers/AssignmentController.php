@@ -14,17 +14,21 @@ class AssignmentController extends Controller
     // عرض كل الواجبات + إضافة
     public function index(Request $request)
     {
-        $assignments = Assignment::whereHas('lesson.course', function($q) {
-                $q->where('teacher_id', Auth::id());
+        $assignments = Assignment::where(function($query) {
+                $query->whereHas('lesson.course', function($q) {
+                    $q->where('teacher_id', Auth::id());
+                })
+                ->orWhereHas('group', function($q) {
+                    $q->where('teacher_id', Auth::id());
+                });
             })
             ->with(['lesson.course', 'group'])
             ->get();
 
         // تقسيم الواجبات
-        $now = Carbon::now();
-        $upcoming = $assignments->filter(fn($a) => $a->deadline && $a->deadline->gt($now) && !$a->is_open);
-        $open = $assignments->filter(fn($a) => $a->is_open && (!$a->deadline || $a->deadline->gte($now)));
-        $past = $assignments->filter(fn($a) => $a->deadline && $a->deadline->lt($now));
+        $upcoming = collect(); // لا حاجة لـ "لم يبدأ بعد" حسب طلب المستخدم
+        $open = $assignments->filter(fn($a) => $a->is_open);
+        $past = $assignments->filter(fn($a) => !$a->is_open);
 
         // دروس ومجموعات للمدرس
         $lessons = Lesson::whereHas('course', function ($q) {
@@ -41,34 +45,20 @@ class AssignmentController extends Controller
     // فورم إنشاء
     public function create()
     {
-         $assignments = Assignment::whereHas('lesson.course', function($q) {
-                $q->where('teacher_id', Auth::id());
-            })
-            ->with(['lesson.course', 'group'])
-            ->get();
-
-        // تقسيم الواجبات
-        $now = Carbon::now();
-        $upcoming = $assignments->filter(fn($a) => $a->deadline && $a->deadline->gt($now) && !$a->is_open);
-        $open = $assignments->filter(fn($a) => $a->is_open && (!$a->deadline || $a->deadline->gte($now)));
-        $past = $assignments->filter(fn($a) => $a->deadline && $a->deadline->lt($now));
-
-        // دروس ومجموعات للمدرس
-        $lessons = Lesson::whereHas('course', function ($q) {
-                $q->where('teacher_id', Auth::id());
-            })
-            ->with('course')
-            ->get();
-
-        $groups = Group::where('teacher_id', Auth::id())->get();
-
-        return view('assignments.index', compact('assignments', 'upcoming', 'open', 'past', 'lessons', 'groups'));
+        return $this->index(request());
     }
 
 
 public function deleteFile($id, $index)
 {
-    $assignment = Assignment::findOrFail($id);
+    $assignment = Assignment::where(function($query) {
+            $query->whereHas('lesson.course', function($q) {
+                $q->where('teacher_id', Auth::id());
+            })
+            ->orWhereHas('group', function($q) {
+                $q->where('teacher_id', Auth::id());
+            });
+        })->findOrFail($id);
     $files = is_array($assignment->files) ? $assignment->files : [];
 
     if (! isset($files[$index])) {
@@ -102,6 +92,25 @@ public function deleteFile($id, $index)
             'group_id'    => 'nullable|exists:groups,id',
         ]);
 
+        // التحقق من ملكية الدرس أو المجموعة للمدرس
+        if ($request->filled('lesson_id')) {
+            $lesson = Lesson::whereHas('course', function($q) {
+                $q->where('teacher_id', Auth::id());
+            })->find($request->lesson_id);
+
+            if (!$lesson) {
+                return back()->withErrors(['lesson_id' => 'الدرس المختار غير صالح أو لا يتبع لك.']);
+            }
+        }
+
+        if ($request->filled('group_id')) {
+            $group = Group::where('teacher_id', Auth::id())->find($request->group_id);
+
+            if (!$group) {
+                return back()->withErrors(['group_id' => 'المجموعة المختارة غير صالحة أو لا تتبع لك.']);
+            }
+        }
+
         // معالجة الملفات
         $files = [];
         if ($request->hasFile('files')) {
@@ -121,7 +130,15 @@ public function deleteFile($id, $index)
     // عرض واجب واحد
     public function show($id)
     {
-        $assignment = Assignment::with(['lesson.course', 'group', 'answers.student'])->findOrFail($id);
+        $assignment = Assignment::where(function($query) {
+                $query->whereHas('lesson.course', function($q) {
+                    $q->where('teacher_id', Auth::id());
+                })
+                ->orWhereHas('group', function($q) {
+                    $q->where('teacher_id', Auth::id());
+                });
+            })
+            ->with(['lesson.course', 'group', 'answers.student'])->findOrFail($id);
 
         return view('assignments.show', compact('assignment'));
     }
@@ -129,7 +146,14 @@ public function deleteFile($id, $index)
     // فورم التعديل
     public function edit($id)
     {
-        $assignment = Assignment::findOrFail($id);
+        $assignment = Assignment::where(function($query) {
+                $query->whereHas('lesson.course', function($q) {
+                    $q->where('teacher_id', Auth::id());
+                })
+                ->orWhereHas('group', function($q) {
+                    $q->where('teacher_id', Auth::id());
+                });
+            })->findOrFail($id);
 
         $lessons = Lesson::whereHas('course', function ($q) {
                 $q->where('teacher_id', Auth::id());
@@ -145,7 +169,14 @@ public function deleteFile($id, $index)
     // تحديث واجب
     public function update(Request $request, $id)
 {
-    $assignment = Assignment::findOrFail($id);
+    $assignment = Assignment::where(function($query) {
+            $query->whereHas('lesson.course', function($q) {
+                $q->where('teacher_id', Auth::id());
+            })
+            ->orWhereHas('group', function($q) {
+                $q->where('teacher_id', Auth::id());
+            });
+        })->findOrFail($id);
 
     $data = $request->validate([
         'title'       => 'required|string|max:255',
@@ -158,6 +189,25 @@ public function deleteFile($id, $index)
         'lesson_id'   => 'nullable|exists:lessons,id',
         'group_id'    => 'nullable|exists:groups,id',
     ]);
+
+    // التحقق من ملكية الدرس أو المجموعة للمدرس
+    if ($request->filled('lesson_id')) {
+        $lesson = Lesson::whereHas('course', function($q) {
+            $q->where('teacher_id', Auth::id());
+        })->find($request->lesson_id);
+
+        if (!$lesson) {
+            return back()->withErrors(['lesson_id' => 'الدرس المختار غير صالح أو لا يتبع لك.']);
+        }
+    }
+
+    if ($request->filled('group_id')) {
+        $group = Group::where('teacher_id', Auth::id())->find($request->group_id);
+
+        if (!$group) {
+            return back()->withErrors(['group_id' => 'المجموعة المختارة غير صالحة أو لا تتبع لك.']);
+        }
+    }
 
     // اجمع الملفات القديمة مع الجديدة
     $files = is_array($assignment->files) ? $assignment->files : [];
@@ -180,7 +230,14 @@ public function deleteFile($id, $index)
     // حذف واجب
     public function destroy($id)
     {
-        $assignment = Assignment::findOrFail($id);
+        $assignment = Assignment::where(function($query) {
+                $query->whereHas('lesson.course', function($q) {
+                    $q->where('teacher_id', Auth::id());
+                })
+                ->orWhereHas('group', function($q) {
+                    $q->where('teacher_id', Auth::id());
+                });
+            })->findOrFail($id);
         $assignment->delete();
 
         return redirect()->route('teacher.assignments.index')->with('success', 'تم حذف الواجب');

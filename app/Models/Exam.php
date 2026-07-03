@@ -34,6 +34,11 @@ protected $casts = [
     {
         return $this->belongsTo(Group::class, 'group_id');
     }
+
+    public function getIsOpenAttribute($value)
+    {
+        return $value || ($this->start_time && $this->end_time && now()->between($this->start_time, $this->end_time));
+    }
 }
 
 

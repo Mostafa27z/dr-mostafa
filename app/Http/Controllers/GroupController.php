@@ -306,10 +306,25 @@ class GroupController extends Controller
             ->take(5)
             ->get();
 
+        // الامتحانات المرتبطة بالمجموعة أو بالدروس التي تحتويها المجموعة
+        // وبما أنه يمكن تحديد الدرس أو المجموعة للامتحان:
+        // نأتي بجميع امتحانات المعلم المرتبطة بهذه المجموعة مباشرة، أو بالدروس التي تنتمي لكورسات يمتلكها المعلم
+        $groupExams = \App\Models\Exam::where('teacher_id', Auth::id())
+            ->where(function ($q) use ($group) {
+                $q->where('group_id', $group->id)
+                  ->orWhere(function ($q2) {
+                      $q2->whereNotNull('lesson_id');
+                  });
+            })
+            ->with('lesson.course')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('groups.show', compact(
             'group',
             'allSessions',
-            'recentAssignments'
+            'recentAssignments',
+            'groupExams'
         ));
     }
 

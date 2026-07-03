@@ -19,7 +19,15 @@ class ExamController extends Controller
     // 🟢 المدرس: عرض كل الامتحانات اللي عملها
    public function index(Request $request)
 {
-    $query = Exam::where('teacher_id', Auth::id())
+    $query = Exam::where(function($q) {
+            $q->where('teacher_id', Auth::id())
+              ->orWhereHas('lesson.course', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              })
+              ->orWhereHas('group', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              });
+        })
         ->with(['lesson.course', 'group']);
 
     if ($request->filled('search')) {
@@ -31,11 +39,8 @@ class ExamController extends Controller
     $now = now();
 
     $upcomingExams = $exams->filter(fn($exam) => $exam->start_time && $exam->start_time > $now);
-    $recentExams   = $exams->filter(fn($exam) =>
-        ($exam->start_time && $exam->start_time <= $now && $exam->end_time && $exam->end_time >= $now)
-        || ($exam->is_open)
-    );
-    $pastExams     = $exams->filter(fn($exam) => $exam->end_time && $exam->end_time < $now);
+    $recentExams   = $exams->filter(fn($exam) => $exam->is_open);
+    $pastExams     = $exams->filter(fn($exam) => !$exam->is_open && $exam->end_time && $exam->end_time < $now);
 
     $lessons = Lesson::with('course')
         ->whereHas('course', fn($q) => $q->where('teacher_id', Auth::id()))
@@ -65,10 +70,10 @@ class ExamController extends Controller
         $data = $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
-            'lesson_id'   => 'required|exists:lessons,id',
-            'group_id'    => 'nullable|exists:groups,id',
-            'start_time'  => 'nullable|date',
-            'end_time'    => 'nullable|date|after_or_equal:start_time',
+            'lesson_id'   => 'required_without:group_id|nullable|exists:lessons,id',
+            'group_id'    => 'required_without:lesson_id|nullable|exists:groups,id',
+            'start_time'  => 'required|date',
+            'end_time'    => 'required|date|after:start_time',
             'duration'    => 'nullable|integer',
             'is_open'     => 'boolean',
             'is_limited'  => 'boolean',
@@ -85,12 +90,17 @@ class ExamController extends Controller
     // 🟢 المدرس: عرض امتحان معين
     public function show($id)
     {
-        $exam = Exam::with(['lesson.course', 'questions.options', 'group'])
+        $exam = Exam::where(function($q) {
+                $q->where('teacher_id', Auth::id())
+                  ->orWhereHas('lesson.course', function($q2) {
+                      $q2->where('teacher_id', Auth::id());
+                  })
+                  ->orWhereHas('group', function($q2) {
+                      $q2->where('teacher_id', Auth::id());
+                  });
+            })
+            ->with(['lesson.course', 'questions.options', 'group'])
             ->findOrFail($id);
-
-        if ($exam->teacher_id != Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
 
         return view('exams.show', compact('exam'));
     }
@@ -98,7 +108,16 @@ class ExamController extends Controller
     // 🟢 المدرس: صفحة تعديل امتحان
     public function edit($id)
 {
-    $exam = Exam::with(['lesson.course', 'group'])->findOrFail($id);
+    $exam = Exam::where(function($q) {
+            $q->where('teacher_id', Auth::id())
+              ->orWhereHas('lesson.course', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              })
+              ->orWhereHas('group', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              });
+        })
+        ->with(['lesson.course', 'group'])->findOrFail($id);
 
     if ($exam->teacher_id != Auth::id()) {
         abort(403, 'Unauthorized');
@@ -118,20 +137,24 @@ class ExamController extends Controller
 
     // 🟢 المدرس: تعديل امتحان
     public function update(Request $request, $id)
-    {
-        $exam = Exam::findOrFail($id);
+{
+    $exam = Exam::where(function($q) {
+            $q->where('teacher_id', Auth::id())
+              ->orWhereHas('lesson.course', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              })
+              ->orWhereHas('group', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              });
+        })->findOrFail($id);
 
-        if ($exam->teacher_id != Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        $data = $request->validate([
+    $data = $request->validate([
             'title'       => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'lesson_id'   => 'sometimes|exists:lessons,id',
-            'group_id'    => 'nullable|exists:groups,id',
-            'start_time'  => 'nullable|date',
-            'end_time'    => 'nullable|date|after_or_equal:start_time',
+            'lesson_id'   => 'required_without:group_id|nullable|exists:lessons,id',
+            'group_id'    => 'required_without:lesson_id|nullable|exists:groups,id',
+            'start_time'  => 'required|date',
+            'end_time'    => 'required|date|after:start_time',
             'duration'    => 'nullable|integer',
             'is_open'     => 'boolean',
             'is_limited'  => 'boolean',
@@ -146,11 +169,15 @@ class ExamController extends Controller
     // 🟢 المدرس: حذف امتحان
     public function destroy($id)
     {
-        $exam = Exam::findOrFail($id);
-
-        if ($exam->teacher_id != Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
+        $exam = Exam::where(function($q) {
+                $q->where('teacher_id', Auth::id())
+                  ->orWhereHas('lesson.course', function($q2) {
+                      $q2->where('teacher_id', Auth::id());
+                  })
+                  ->orWhereHas('group', function($q2) {
+                      $q2->where('teacher_id', Auth::id());
+                  });
+            })->findOrFail($id);
 
         $exam->delete();
 
@@ -191,11 +218,15 @@ class ExamController extends Controller
 
 public function addQuestion(Request $request, $examId)
 {
-    $exam = Exam::findOrFail($examId);
-
-    if ($exam->teacher_id != Auth::id()) {
-        return back()->with('error', 'غير مصرح لك');
-    }
+    $exam = Exam::where(function($q) {
+            $q->where('teacher_id', Auth::id())
+              ->orWhereHas('lesson.course', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              })
+              ->orWhereHas('group', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              });
+        })->findOrFail($examId);
 
     $data = $request->validate([
         'title'   => 'required|string|max:255',
@@ -282,7 +313,17 @@ public function quesDestroy($id)
 {
     $question = ExamQuestion::with('exam')->findOrFail($id);
 
-    if ($question->exam->teacher_id != Auth::id()) {
+    $exam = Exam::where(function($q) {
+            $q->where('teacher_id', Auth::id())
+              ->orWhereHas('lesson.course', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              })
+              ->orWhereHas('group', function($q2) {
+                  $q2->where('teacher_id', Auth::id());
+              });
+        })->find($question->exam_id);
+
+    if (!$exam) {
         abort(403, 'غير مصرح لك');
     }
 
@@ -322,16 +363,26 @@ public function start($id)
     $exam = Exam::findOrFail($id);
     $student = auth()->user();
 
+    if (!$exam->is_open) {
+        return redirect()->route('student.exams.index')->with('error', 'هذا الامتحان غير متاح حالياً.');
+    }
+
     // البحث عن محاولة الطالب الحالية أو إنشائها
-    $attempt = ExamAttempt::firstOrCreate(
-        [
+    $attempt = ExamAttempt::where('exam_id', $exam->id)
+        ->where('student_id', $student->id)
+        ->first();
+
+    if ($attempt && $attempt->submitted) {
+        return redirect()->route('student.exams.result', $exam->id)->with('error', 'لقد قمت بتسليم هذا الامتحان بالفعل.');
+    }
+
+    if (!$attempt) {
+        $attempt = ExamAttempt::create([
             'exam_id'    => $exam->id,
             'student_id' => $student->id,
-        ],
-        [
-            'started_at' => now(), 
-        ]
-    );
+            'started_at' => now(),
+        ]);
+    }
 
     // مدة الامتحان بالدقائق (من قاعدة البيانات)
     $durationMinutes = (int) $exam->duration;
@@ -340,13 +391,13 @@ public function start($id)
     // حساب الوقت المستهلك (استخدم Carbon بدلاً من now())
     $startedAt = Carbon::parse($attempt->started_at);
     $currentTime = now();
-    $elapsed = $currentTime->diffInSeconds($startedAt, false);
+    $elapsed = (int) $currentTime->diffInSeconds($startedAt, false);
 
     // التأكد من أن الوقت المنقضي ليس سالباً
     $elapsed = max(0, $elapsed);
 
     // الوقت المتبقي
-    $remaining = max($durationSeconds - $elapsed, 0);
+    $remaining = (int) max($durationSeconds - $elapsed, 0);
 
     // لو الوقت انتهى → تسليم تلقائي
     if ($remaining <= 0) {
@@ -454,11 +505,18 @@ public function attemptData($id)
     $exam = Exam::with(['questions.options'])->findOrFail($id);
     $studentId = Auth::id();
 
-    // نحصل أو ننشئ المحاولة (لن يتم تكرار started_at لو كانت موجودة)
-    $attempt = ExamAttempt::firstOrCreate(
-        ['exam_id' => $exam->id, 'student_id' => $studentId],
-        ['started_at' => now()]
-    );
+    $attempt = ExamAttempt::where('exam_id', $exam->id)
+        ->where('student_id', $studentId)
+        ->first();
+
+    if (!$attempt) {
+        return response()->json(['success' => false, 'message' => 'No attempt found']);
+    }
+
+    // حساب الوقت المتبقي
+    $durationSeconds = (int) ($exam->duration * 60);
+    $elapsedSeconds = (int) now()->diffInSeconds($attempt->started_at);
+    $remainingSeconds = (int) max(0, $durationSeconds - $elapsedSeconds);
 
     // الإجابات المحفوظة المرتبطة بهذه المحاولة (map by question id)
     $saved = ExamAnswer::where('exam_attempt_id', $attempt->id)
@@ -475,7 +533,7 @@ public function attemptData($id)
         'success' => true,
         'attempt' => [
             'id' => $attempt->id,
-            'started_at' => $attempt->started_at ? $attempt->started_at->toISOString() : now()->toISOString(),
+            'remaining_seconds' => $remainingSeconds,
         ],
         'exam' => [
             'id' => $exam->id,
@@ -555,7 +613,7 @@ public function autoSubmitAjax(Request $request, $id)
     }
 
     // سجل النتيجة إن لم تكن موجودة
-    $result = ExamResult::firstOrCreate(
+    $result = ExamResult::updateOrCreate(
         ['exam_id' => $exam->id, 'student_id' => $studentId],
         ['student_degree' => $totalScore]
     );
@@ -566,6 +624,7 @@ public function autoSubmitAjax(Request $request, $id)
         'submitted' => true,
         'auto_submitted' => true,
         'submitted_at' => now(),
+        'score' => $totalScore,
     ]);
 
     return response()->json(['success' => true, 'redirect' => route('student.exams.result', $exam->id)]);
@@ -621,6 +680,7 @@ public function submit(Request $request, $id)
         'submitted' => true,
         'auto_submitted' => $request->has('auto_submit') && $request->auto_submit == '1',
         'submitted_at' => now(),
+        'score' => $totalScore,
     ]);
 
     $message = ($request->has('auto_submit') && $request->auto_submit == '1')

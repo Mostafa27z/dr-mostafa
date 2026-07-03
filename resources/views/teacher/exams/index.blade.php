@@ -51,7 +51,7 @@
                     <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">الدرس <span class="text-rose-500">*</span></label>
                     <div class="relative group/input">
                         <select name="lesson_id"
-                            class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-primary-500 dark:focus:border-primary-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none appearance-none cursor-pointer" required>
+                            class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-primary-500 dark:focus:border-primary-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none appearance-none cursor-pointer">
                             <option value="">اختر الدرس</option>
                             @foreach($lessons as $lesson)
                                 <option value="{{ $lesson->id }}">{{ $lesson->title }} ({{ $lesson->course->title }})</option>
@@ -77,18 +77,18 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">تاريخ البداية</label>
+                        <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">تاريخ البداية <span class="text-rose-500">*</span></label>
                         <div class="relative group/input">
                             <input type="datetime-local" name="start_time" value="{{ old('start_time') }}"
-                                class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-primary-500 dark:focus:border-primary-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none">
+                                class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-primary-500 dark:focus:border-primary-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none" required>
                             <i class="fas fa-clock absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 dark:text-slate-700 group-focus-within/input:text-primary-500 transition-colors"></i>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">تاريخ الانتهاء</label>
+                        <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 mr-1">تاريخ الانتهاء <span class="text-rose-500">*</span></label>
                         <div class="relative group/input">
                             <input type="datetime-local" name="end_time" value="{{ old('end_time') }}"
-                                class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-primary-500 dark:focus:border-primary-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none">
+                                class="w-full px-8 py-5 bg-gray-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-primary-500 dark:focus:border-primary-500 rounded-[2rem] text-slate-800 dark:text-white font-black transition-all outline-none" required>
                             <i class="fas fa-stopwatch absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 dark:text-slate-700 group-focus-within/input:text-primary-500 transition-colors"></i>
                         </div>
                     </div>
@@ -144,28 +144,28 @@
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-lg font-black text-slate-800 dark:text-white flex items-center">
                     <span>امتحانات قادمة</span>
-                    <i class="fas fa-clock ml-3 text-green-500"></i>
+                    <i class="fas fa-clock ml-3 text-amber-500"></i>
                 </h3>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($upcomingExams as $exam)
-                    <div class="bg-gray-50/50 dark:bg-slate-900/50 rounded-[2rem] border border-gray-100 dark:border-slate-800 p-6 group/card hover:border-green-500/30 transition-all flex flex-col">
+                    <div class="bg-gray-50/50 dark:bg-slate-900/50 rounded-[2rem] border border-gray-100 dark:border-slate-800 p-6 group/card hover:border-amber-500/30 transition-all flex flex-col">
                         <div class="flex items-start justify-between gap-4 mb-4">
                             <div class="flex flex-col gap-2">
-                                <a href="{{ route('exams.show', $exam->id) }}" class="w-10 h-10 bg-white dark:bg-slate-800 text-slate-400 hover:bg-green-500 hover:text-white rounded-xl flex items-center justify-center shadow-sm transition-all">
+                                <a href="{{ route('exams.show', $exam->id) }}" class="w-10 h-10 bg-white dark:bg-slate-800 text-slate-400 hover:bg-amber-500 hover:text-white rounded-xl flex items-center justify-center shadow-sm transition-all">
                                     <i class="fas fa-eye text-xs"></i>
                                 </a>
                             </div>
-                            <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-2xl flex items-center justify-center">
+                            <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center">
                                 <i class="fas fa-clock text-xl"></i>
                             </div>
                         </div>
                         <div class="text-right flex-1">
-                            <h4 class="text-sm font-black text-slate-800 dark:text-white group-hover/card:text-green-600 transition-colors mb-2">{{ $exam->title }}</h4>
+                            <h4 class="text-sm font-black text-slate-800 dark:text-white group-hover/card:text-amber-600 transition-colors mb-2">{{ $exam->title }}</h4>
                             <p class="text-[10px] text-gray-400 font-bold mt-1 h-8 overflow-hidden line-clamp-2 leading-relaxed">{{ $exam->description ?? 'لا يوجد وصف' }}</p>
                         </div>
                         <div class="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between">
-                            <span class="text-xs font-black text-green-600">{{ $exam->total_degree }} درجة</span>
+                            <span class="text-xs font-black text-amber-600">{{ $exam->total_degree }} درجة</span>
                             <span class="text-[10px] font-bold text-gray-400">{{ $exam->start_time ? $exam->start_time->format('Y-m-d H:i') : '---' }}</span>
                         </div>
                     </div>

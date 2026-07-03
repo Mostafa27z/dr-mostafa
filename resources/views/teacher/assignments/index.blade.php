@@ -4,22 +4,6 @@
 @section('page-title', 'إدارة الواجبات')
 
 @section('content')
-            <!-- رسائل -->
-            @if(session('success'))
-                <div class="bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700/50 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl mb-4">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700/50 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl mb-4">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
 
             <!-- إضافة واجب جديد -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden mb-6">
@@ -106,18 +90,6 @@
                 <div class="p-6">
                     @if($assignments->count() > 0)
                         <div class="space-y-8">
-                            <!-- القادم -->
-                            <div>
-                                <h6 class="text-lg font-bold text-indigo-600 mb-3">الواجبات القادمة</h6>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    @forelse($upcoming as $assignment)
-                                        @include('teacher.assignments.partials.card', ['assignment' => $assignment])
-                                    @empty
-                                        <p class="text-gray-500 dark:text-gray-400">لا توجد واجبات قادمة</p>
-                                    @endforelse
-                                </div>
-                            </div>
-
                             <!-- المفتوحة -->
                             <div>
                                 <h6 class="text-lg font-bold text-green-600 dark:text-green-400 mb-3">الواجبات المفتوحة</h6>

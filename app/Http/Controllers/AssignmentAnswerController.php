@@ -9,13 +9,35 @@ class AssignmentAnswerController extends Controller
 {
     public function show($id)
     {
-        $answer = AssignmentAnswer::with('student', 'assignment')->findOrFail($id);
+        $answer = AssignmentAnswer::whereHas('assignment', function($query) {
+                $query->where(function($q) {
+                    $q->whereHas('lesson.course', function($q2) {
+                        $q2->where('teacher_id', Auth::id());
+                    })
+                    ->orWhereHas('group', function($q2) {
+                        $q2->where('teacher_id', Auth::id());
+                    });
+                });
+            })
+            ->with('student', 'assignment')
+            ->findOrFail($id);
+            
         return view('assignments.answers.show', compact('answer'));
     }
 
     public function update(Request $request, $id)
     {
-        $answer = AssignmentAnswer::findOrFail($id);
+        $answer = AssignmentAnswer::whereHas('assignment', function($query) {
+                $query->where(function($q) {
+                    $q->whereHas('lesson.course', function($q2) {
+                        $q2->where('teacher_id', Auth::id());
+                    })
+                    ->orWhereHas('group', function($q2) {
+                        $q2->where('teacher_id', Auth::id());
+                    });
+                });
+            })
+            ->findOrFail($id);
 
         $data = $request->validate([
             'teacher_comment' => 'nullable|string',
@@ -37,6 +59,10 @@ public function submit(Request $request, $assignmentId)
 {
     $assignment = \App\Models\Assignment::findOrFail($assignmentId);
     $studentId = Auth::id();
+
+    if (!$assignment->is_open) {
+        return back()->withErrors(['msg' => 'عذراً، هذا الواجب غير متاح للتسليم حالياً.']);
+    }
 
     if (AssignmentAnswer::where('assignment_id', $assignment->id)->where('student_id', $studentId)->exists()) {
         return redirect()->route('student.assignments.result', $assignment->id);
@@ -70,7 +96,7 @@ public function resubmit(Request $request, $assignmentId)
         ->where('student_id', $studentId)
         ->firstOrFail();
 
-    if (($assignment->deadline && $assignment->deadline->isPast()) || $answer->teacher_degree !== null) {
+    if (!$assignment->is_open || $answer->teacher_degree !== null) {
         return back()->withErrors(['msg' => 'لا يمكنك تعديل الإجابة بعد انتهاء الموعد أو بعد مراجعتها.']);
     }
 

@@ -245,6 +245,53 @@
                     @endforelse
                 </div>
             </div>
+
+            <!-- Group & Lesson Exams -->
+            <div class="bg-white dark:bg-slate-950 rounded-[2.5rem] border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden relative">
+                <div class="px-10 py-8 border-b border-gray-50 dark:border-slate-900 bg-gray-50/50 dark:bg-slate-900/50 flex justify-between items-center text-right">
+                    <a href="{{ route('teacher.exams.index') }}" class="px-5 py-2.5 bg-primary-600/10 text-primary-600 dark:text-primary-400 rounded-xl text-[10px] font-black border border-primary-500/10 hover:bg-primary-600 hover:text-white transition-all flex items-center group">
+                        <i class="fas fa-plus ml-2 group-hover:rotate-90 transition-transform duration-300"></i>
+                        إنشاء امتحان
+                    </a>
+                    <h3 class="text-lg font-black text-slate-800 dark:text-white flex items-center">
+                        الامتحانات المرتبطة بالمجموعة والدروس
+                        <i class="fas fa-file-alt mr-4 text-primary-500"></i>
+                    </h3>
+                </div>
+                <div class="p-10 text-right space-y-6">
+                    @forelse($groupExams ?? [] as $exam)
+                        <div class="flex items-center justify-between p-8 bg-primary-50/10 dark:bg-primary-900/5 rounded-[2rem] border border-primary-100/50 dark:border-primary-900/20 group hover:border-primary-500/50 transition-all duration-500">
+                            <a href="{{ route('teacher.exams.show', $exam->id) }}" class="px-8 py-4 bg-primary-600 text-white rounded-2xl text-xs font-black shadow-xl shadow-primary-500/20 transition-all transform hover:-translate-y-1">
+                                عرض التفاصيل
+                            </a>
+                            <div class="flex items-center">
+                                <div class="mr-6">
+                                    <h4 class="text-base font-black text-slate-800 dark:text-gray-200">{{ $exam->title }}</h4>
+                                    <div class="flex flex-wrap items-center justify-end gap-3 text-[10px] font-bold text-gray-500 mt-2">
+                                        @if($exam->group_id == $group->id)
+                                            <span class="px-2 py-0.5 bg-green-500/10 text-green-600 rounded">خاص بالمجموعة</span>
+                                        @endif
+                                        @if($exam->lesson)
+                                            <span class="px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded">درس: {{ $exam->lesson->title }}</span>
+                                        @endif
+                                        <span><i class="fas fa-star ml-1"></i> {{ $exam->total_degree }} درجة</span>
+                                    </div>
+                                </div>
+                                <div class="w-16 h-16 bg-white dark:bg-slate-800 text-primary-500 rounded-[1.5rem] flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-file-invoice text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-16 text-center border-4 border-dashed border-gray-50 dark:border-slate-900 rounded-[2rem]">
+                            <div class="w-20 h-20 bg-gray-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-200">
+                                <i class="fas fa-file-prescription text-3xl"></i>
+                            </div>
+                            <h5 class="text-sm font-black text-gray-400 uppercase tracking-widest leading-6 italic">لا توجد امتحانات مرتبطة بهذه المجموعة</h5>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
         </div>
     </div>
 </div>

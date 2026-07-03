@@ -104,12 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!data.success) throw new Error('Failed to load attempt data');
 
         attemptId = data.attempt.id;
-        const startedAt = new Date(data.attempt.started_at);
-        const durationSeconds = (data.exam.duration_minutes || 60) * 60;
-
-        const now = new Date();
-        const elapsed = Math.max(0, Math.floor((now - startedAt) / 1000));
-        remainingSeconds = Math.max(0, durationSeconds - elapsed);
+        remainingSeconds = data.attempt.remaining_seconds;
 
         // استرجاع الإجابات المحفوظة ووضعها في الـ inputs
         const saved = data.saved_answers || {};
@@ -118,7 +113,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const optionId = info.option_id;
             if (optionId) {
                 const input = document.querySelector('input[data-question-id="'+qId+'"][data-option-id="'+optionId+'"]');
-                if (input) input.checked = true;
+                if (input) {
+                    input.checked = true;
+                    // تلوين الإجابة المحددة فور الاسترجاع
+                    const label = input.closest('label');
+                    if (label) {
+                        label.classList.add('border-primary-500', 'bg-primary-50/30', 'dark:bg-primary-900/10', 'ring-4', 'ring-primary-500/5');
+                    }
+                }
             }
         }
 
@@ -126,18 +128,22 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .catch(err => {
         console.error(err);
-        // لو فشل جلب البيانات لا توقف الصفحة؛ ضع عدّاد افتراضي
-        remainingSeconds = ({{ $exam->duration ?? 60 }}) * 60;
+        // لو فشل جلب البيانات لا توقف الصفحة؛ استخدم الوقت الممرر من السيرفر كاحتياط
+        remainingSeconds = {{ $duration }};
         startCountdown();
     });
 
-    // نص الى عرض من الثواني
+    // نص الى عرض من الثواني (HH:MM:SS)
     function formatTime(sec) {
         const h = Math.floor(sec / 3600);
         const m = Math.floor((sec % 3600) / 60);
         const s = sec % 60;
-        if (h > 0) return `${h}h ${m}m ${s}s`;
-        return `${m}m ${s}s`;
+        
+        const displayH = String(h).padStart(2, '0');
+        const displayM = String(m).padStart(2, '0');
+        const displayS = String(s).padStart(2, '0');
+        
+        return `${displayH}:${displayM}:${displayS}`;
     }
 
     function startCountdown() {
@@ -199,6 +205,21 @@ document.addEventListener('DOMContentLoaded', function () {
         input.addEventListener('change', function (e) {
             const qId = this.dataset.questionId;
             const optId = this.dataset.optionId;
+
+            // تحديث المؤشرات البصرية للتحديد الفوري
+            const container = this.closest('.p-6');
+            if (container) {
+                container.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    const label = radio.closest('label');
+                    if (label) {
+                        if (radio.checked) {
+                            label.classList.add('border-primary-500', 'bg-primary-50/30', 'dark:bg-primary-900/10', 'ring-4', 'ring-primary-500/5');
+                        } else {
+                            label.classList.remove('border-primary-500', 'bg-primary-50/30', 'dark:bg-primary-900/10', 'ring-4', 'ring-primary-500/5');
+                        }
+                    }
+                });
+            }
 
             // حفظ عبر AJAX
             fetch(saveAnswerUrl, {

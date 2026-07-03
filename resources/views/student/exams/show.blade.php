@@ -51,10 +51,16 @@
             </div>
 
             <div class="flex flex-col items-center gap-4 pt-6 border-t border-gray-50 dark:border-slate-900 border-dashed">
-                <a href="{{ route('student.exams.start', $exam->id) }}"
-                   class="w-full bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-2xl text-sm font-black transition-all shadow-lg shadow-primary-200 dark:shadow-none flex items-center justify-center">
-                    <i class="fas fa-play ml-2 text-xs"></i> الانتقال لتعليمات البدء
-                </a>
+                @if($exam->is_open)
+                    <a href="{{ route('student.exams.start', $exam->id) }}"
+                       class="w-full bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-2xl text-sm font-black transition-all shadow-lg shadow-primary-200 dark:shadow-none flex items-center justify-center">
+                        <i class="fas fa-play ml-2 text-xs"></i> الانتقال لتعليمات البدء
+                    </a>
+                @else
+                    <div class="w-full bg-slate-100 dark:bg-slate-900 text-slate-400 px-8 py-4 rounded-2xl text-sm font-black flex items-center justify-center italic">
+                        <i class="fas fa-lock ml-2"></i> هذا الامتحان غير متاح حالياً
+                    </div>
+                @endif
             </div>
         </div>
     </div>

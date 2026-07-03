@@ -37,4 +37,9 @@ class Assignment extends Model
     public function answers() {
         return $this->hasMany(AssignmentAnswer::class);
     }
+
+    public function getIsOpenAttribute($value)
+    {
+        return $value || ($this->deadline && $this->deadline->isFuture());
+    }
 }
