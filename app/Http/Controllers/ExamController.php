@@ -99,10 +99,48 @@ class ExamController extends Controller
                       $q2->where('teacher_id', Auth::id());
                   });
             })
-            ->with(['lesson.course', 'questions.options', 'group'])
+            ->with(['lesson.course', 'questions.options', 'group', 'results.student'])
             ->findOrFail($id);
 
         return view('exams.show', compact('exam'));
+    }
+
+    public function studentResultDetails($examId, $studentId)
+    {
+        $exam = Exam::where(function($q) {
+                $q->where('teacher_id', Auth::id())
+                  ->orWhereHas('lesson.course', function($q2) {
+                      $q2->where('teacher_id', Auth::id());
+                  })
+                  ->orWhereHas('group', function($q2) {
+                      $q2->where('teacher_id', Auth::id());
+                  });
+            })
+            ->with(['questions.options'])
+            ->findOrFail($examId);
+
+        $student = \App\Models\User::findOrFail($studentId);
+
+        $result = $exam->results()
+            ->where('student_id', $studentId)
+            ->firstOrFail();
+
+        $questions = $exam->questions->map(function ($question) use ($studentId) {
+            $answer = $question->answers()
+                ->where('student_id', $studentId)
+                ->first();
+
+            $correctOption = $question->options->where('is_correct', 1)->first();
+
+            return [
+                'question' => $question,
+                'answer' => $answer,
+                'chosenOption' => $answer?->chosenOption,
+                'correctOption' => $correctOption,
+            ];
+        });
+
+        return view('teacher.exams.student_result', compact('exam', 'student', 'result', 'questions'));
     }
 
     // 🟢 المدرس: صفحة تعديل امتحان
@@ -515,8 +553,7 @@ public function attemptData($id)
 
     // حساب الوقت المتبقي
     $durationSeconds = (int) ($exam->duration * 60);
-    $elapsedSeconds = (int) now()->diffInSeconds($attempt->started_at);
-    $remainingSeconds = (int) max(0, $durationSeconds - $elapsedSeconds);
+    $remainingSeconds = (int) max(0, $durationSeconds - $attempt->elapsed_seconds);
 
     // الإجابات المحفوظة المرتبطة بهذه المحاولة (map by question id)
     $saved = ExamAnswer::where('exam_attempt_id', $attempt->id)
@@ -541,6 +578,30 @@ public function attemptData($id)
         ],
         'saved_answers' => $saved,
     ]);
+}
+
+// حفظ الوقت المنقضي
+public function saveElapsedTime(Request $request, $id)
+{
+    $request->validate([
+        'elapsed_seconds' => 'required|integer|min:0',
+    ]);
+
+    $exam = Exam::findOrFail($id);
+    $studentId = Auth::id();
+
+    $attempt = ExamAttempt::where('exam_id', $exam->id)
+        ->where('student_id', $studentId)
+        ->firstOrFail();
+
+    // فقط نُحدِّث الوقت المنقضي إذا كان أكبر من القيمة المخزنة (لمنع التراجع)
+    if ($request->elapsed_seconds > $attempt->elapsed_seconds) {
+        $attempt->update([
+            'elapsed_seconds' => $request->elapsed_seconds,
+        ]);
+    }
+
+    return response()->json(['success' => true]);
 }
 
 // حفظ إجابة واحدة عند اختيار المستخدم (AJAX)

@@ -16,6 +16,7 @@ class ExamAttempt extends Model
     'ended_at',
     'submitted',
     'auto_submitted',
+    'elapsed_seconds',
 ];
 
 protected $casts = [
@@ -24,6 +25,7 @@ protected $casts = [
     'started_at' => 'datetime',
     'submitted_at' => 'datetime',
     'ended_at' => 'datetime',
+    'elapsed_seconds' => 'integer',
 ];
 
 

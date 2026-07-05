@@ -93,6 +93,11 @@
                     الجلسات
                 </a>
 
+                <a href="{{ route('student.teachers') }}" class="flex items-center px-6 py-3 hover:bg-slate-800 transition {{ request()->routeIs('student.teachers*') ? 'bg-slate-800 border-r-4 border-primary-500 text-primary-400' : 'text-gray-300' }}">
+                    <i class="fas fa-chalkboard-teacher ml-3 w-5 text-center"></i>
+                    المعلمون
+                </a>
+
                 <div class="px-6 py-2 mt-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     التقييمات
                 </div>

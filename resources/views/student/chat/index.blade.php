@@ -27,7 +27,7 @@
 
         <!-- الجزء الخاص بالإرسال -->
         <div class="p-4 bg-white dark:bg-slate-950 border-t border-gray-50 dark:border-slate-900">
-            <form id="chat-form" action="{{ route('student.chat.store') }}" method="POST" class="flex items-center gap-3">
+            <form id="chat-form" action="{{ route('student.chat.store', $teacher->id) }}" method="POST" class="flex items-center gap-3">
                 @csrf
                 <div class="relative flex-1">
                     <input 
@@ -55,8 +55,8 @@
 <script>
     const chatBox = $('#chat-box');
     const messagesContainer = $('#messages-container');
-    const fetchUrl = "{{ route('student.chat.index') }}";
-    const storeUrl = "{{ route('student.chat.store') }}";
+    const fetchUrl = "{{ route('student.chat.index', $teacher->id) }}";
+    const storeUrl = "{{ route('student.chat.store', $teacher->id) }}";
 
     // 📨 Fetch latest messages (partial)
     function fetchMessages() {

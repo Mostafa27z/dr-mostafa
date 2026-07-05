@@ -152,6 +152,74 @@
         </p>
     </div>
 
+    <!-- نتائج الطلاب -->
+    <div class="bg-white dark:bg-slate-950 rounded-[2.5rem] border border-gray-100 dark:border-slate-800 shadow-2xl p-8">
+        <h3 class="text-xl font-black text-slate-800 dark:text-white flex items-center mb-6">
+            <span>نتائج الطلاب</span>
+            <i class="fas fa-graduation-cap ml-3 text-primary-500"></i>
+        </h3>
+
+        @if($exam->results && $exam->results->count() > 0)
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-100 dark:border-slate-800 text-gray-400 dark:text-gray-500 text-xs">
+                            <th class="px-6 py-4 font-black uppercase">الطالب</th>
+                            <th class="px-6 py-4 font-black uppercase">الدرجة</th>
+                            <th class="px-6 py-4 font-black uppercase">النسبة المئوية</th>
+                            <th class="px-6 py-4 font-black uppercase">تاريخ التقديم</th>
+                            <th class="px-6 py-4 font-black uppercase text-left">الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-slate-900">
+                        @foreach($exam->results as $result)
+                        <tr class="hover:bg-gray-50/30 dark:hover:bg-slate-900/30 transition group">
+                            <td class="px-6 py-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center font-bold text-sm">
+                                        {{ mb_substr($result->student->name ?? 'ط', 0, 1) }}
+                                    </div>
+                                    <span class="font-bold text-slate-700 dark:text-gray-200">{{ $result->student->name ?? 'طالب غير معروف' }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5">
+                                <span class="font-black text-slate-800 dark:text-white text-base">{{ $result->student_degree }}</span>
+                                <span class="text-xs text-gray-400">/ {{ $exam->total_degree }}</span>
+                            </td>
+                            <td class="px-6 py-5">
+                                @php
+                                    $percentage = $exam->total_degree > 0 ? round(($result->student_degree / $exam->total_degree) * 100) : 0;
+                                    $colorClass = $percentage >= 50 ? 'bg-emerald-500' : 'bg-rose-500';
+                                    $textClass = $percentage >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+                                @endphp
+                                <div class="flex items-center gap-3">
+                                    <div class="w-24 bg-gray-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div class="{{ $colorClass }} h-full" style="width: {{ $percentage }}%"></div>
+                                    </div>
+                                    <span class="font-bold text-sm {{ $textClass }}">{{ $percentage }}%</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5">
+                                <span class="text-xs text-gray-400">{{ $result->created_at ? $result->created_at->format('Y-m-d H:i') : '---' }}</span>
+                            </td>
+                            <td class="px-6 py-5 text-left">
+                                <a href="{{ route('teacher.exams.studentResultDetails', [$exam->id, $result->student_id]) }}" class="px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg text-xs font-black hover:bg-primary-600 hover:text-white transition-all shadow-sm shadow-primary-500/10">
+                                    عرض الإجابة
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-12">
+                <i class="fas fa-poll text-4xl text-gray-300 dark:text-slate-700 mb-4"></i>
+                <p class="text-gray-500 dark:text-gray-400 font-black">لا توجد نتائج مسجلة لهذا الامتحان حتى الآن</p>
+            </div>
+        @endif
+    </div>
+
     <!-- إضافة سؤال جديد -->
     <div class="bg-white dark:bg-slate-950 rounded-[2.5rem] border border-gray-100 dark:border-slate-800 shadow-2xl p-8">
         <h3 class="text-xl font-black text-slate-800 dark:text-white flex items-center mb-6">

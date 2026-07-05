@@ -285,5 +285,51 @@ public function showLesson($courseId, $lessonId)
     return view('student.lessons.show', compact('course', 'lesson'));
 }
 
+public function teachers()
+{
+    $studentId = Auth::id();
+
+    // Get teachers where the student is approved in their groups or courses
+    $teachers = \App\Models\User::where('role', 'teacher')
+        ->where(function ($query) use ($studentId) {
+            // Teachers who own groups that the student is approved in
+            $query->whereIn('id', function ($subQuery) use ($studentId) {
+                $subQuery->select('teacher_id')
+                    ->from('groups')
+                    ->join('group_members', 'groups.id', '=', 'group_members.group_id')
+                    ->where('group_members.student_id', $studentId)
+                    ->where('group_members.status', 'approved')
+                    ->whereNull('groups.deleted_at');
+            })
+            // Teachers who own courses that the student is approved in
+            ->orWhereIn('id', function ($subQuery) use ($studentId) {
+                $subQuery->select('teacher_id')
+                    ->from('courses')
+                    ->join('course_enrollments', 'courses.id', '=', 'course_enrollments.course_id')
+                    ->where('course_enrollments.student_id', $studentId)
+                    ->where('course_enrollments.status', 'approved');
+            });
+        })
+        ->get();
+
+    $teachers->map(function ($teacher) use ($studentId) {
+        $teacher->joined_groups = \App\Models\Group::where('teacher_id', $teacher->id)
+            ->whereHas('students', function ($q) use ($studentId) {
+                $q->where('users.id', $studentId);
+            })
+            ->whereNull('deleted_at')
+            ->get();
+
+        $teacher->joined_courses = \App\Models\Course::where('teacher_id', $teacher->id)
+            ->whereHas('students', function ($q) use ($studentId) {
+                $q->where('users.id', $studentId);
+            })
+            ->get();
+        
+        return $teacher;
+    });
+
+    return view('student.teachers', compact('teachers'));
+}
 
 }

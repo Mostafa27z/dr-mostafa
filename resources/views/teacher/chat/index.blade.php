@@ -24,6 +24,54 @@
         </div>
     </div>
 
+    <!-- Filters Section -->
+    <div class="bg-white dark:bg-slate-950 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm p-6 mb-8 text-right animate-fade-in" dir="rtl">
+        <form method="GET" action="{{ route('teacher.chat.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <!-- Search -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">بحث بالاسم أو البريد</label>
+                <div class="relative">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="اسم الطالب أو البريد..." class="w-full pl-4 pr-10 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-white outline-none focus:border-primary-500 transition-all">
+                    <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                </div>
+            </div>
+            
+            <!-- Groups -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">تصفية بالمجموعة</label>
+                <select name="group_id" class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-white outline-none focus:border-primary-500 transition-all">
+                    <option value="">كل المجموعات</option>
+                    @foreach($teacherGroups as $group)
+                        <option value="{{ $group->id }}" {{ request('group_id') == $group->id ? 'selected' : '' }}>{{ $group->title }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Courses -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">تصفية بالكورس</label>
+                <select name="course_id" class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-white outline-none focus:border-primary-500 transition-all">
+                    <option value="">كل الكورسات</option>
+                    @foreach($teacherCourses as $course)
+                        <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>{{ $course->title }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-black shadow-sm transition-all">
+                    تطبيق التصفية
+                </button>
+                @if(request()->anyFilled(['search', 'group_id', 'course_id']))
+                    <a href="{{ route('teacher.chat.index') }}" class="py-3 px-4 bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-xl text-xs font-black transition-all text-center">
+                        إعادة ضبط
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
     <!-- Conversations List Container -->
     <div id="student-list" class="space-y-6">
         @include('teacher.chat.partials.student-list', ['students' => $students])
@@ -34,21 +82,20 @@
 @section('scripts')
 <script>
     function refreshList() {
-        fetch("{{ route('teacher.chat.index') }}", {
+        const url = "{{ route('teacher.chat.index') }}" + window.location.search;
+        fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(res => res.text())
         .then(html => {
             const listContainer = document.getElementById('student-list');
-            // Only update if content actually changed to avoid jarring flickers if possible
-            // but for simplicity we replace it as before
             listContainer.innerHTML = html;
         })
         .catch(err => console.error('Chat refresh failed:', err));
     }
 
-    // Refresh every 5 seconds (slightly increased from 3 for better performance)
-    const refreshInterval = setInterval(refreshList, 5000);
+    // Refresh every 30 seconds (increased from 5 for better performance)
+    const refreshInterval = setInterval(refreshList, 30000);
 
     // Clean up interval if needed (though not strictly necessary on page based navigation)
     window.addEventListener('beforeunload', () => clearInterval(refreshInterval));

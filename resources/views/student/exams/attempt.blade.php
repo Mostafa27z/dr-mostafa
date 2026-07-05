@@ -89,11 +89,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const attemptDataUrl = "{{ route('student.exams.attempt_data', $exam->id) }}";
     const saveAnswerUrl = "{{ route('student.exams.save_answer', $exam->id) }}";
     const autoSubmitUrl = "{{ route('student.exams.auto_submit', $exam->id) }}";
+    const saveElapsedTimeUrl = "{{ route('student.exams.save_elapsed_time', $exam->id) }}";
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const timerEl = document.getElementById('timer');
     let remainingSeconds = null;
+    let totalElapsedSeconds = null;
     let attemptId = null;
     let countdownInterval = null;
+    let saveElapsedInterval = null;
 
     // جلب بيانات المحاولة والإجابات المحفوظة
     fetch(attemptDataUrl, {
@@ -105,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         attemptId = data.attempt.id;
         remainingSeconds = data.attempt.remaining_seconds;
+        totalElapsedSeconds = (data.exam.duration_minutes * 60) - remainingSeconds;
 
         // استرجاع الإجابات المحفوظة ووضعها في الـ inputs
         const saved = data.saved_answers || {};
@@ -125,12 +129,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         startCountdown();
+        startSaveElapsed();
     })
     .catch(err => {
         console.error(err);
-        // لو فشل جلب البيانات لا توقف الصفحة؛ استخدم الوقت الممرر من السيرفر كاحتياط
+        // لو فشل جلب البيانات لا توقف الصفحة؛ استخدم الوقت الممرر من السيرفر كاحتياطي
         remainingSeconds = {{ $duration }};
+        totalElapsedSeconds = 0;
         startCountdown();
+        startSaveElapsed();
     });
 
     // نص الى عرض من الثواني (HH:MM:SS)
@@ -151,15 +158,47 @@ document.addEventListener('DOMContentLoaded', function () {
         updateTimerDisplay();
         countdownInterval = setInterval(() => {
             remainingSeconds--;
+            totalElapsedSeconds++;
             if (remainingSeconds <= 0) {
                 remainingSeconds = 0;
                 updateTimerDisplay();
                 clearInterval(countdownInterval);
+                saveElapsedTimeToServer();
                 handleTimeEnd();
             } else {
                 updateTimerDisplay();
             }
         }, 1000);
+    }
+
+    function startSaveElapsed() {
+        if (saveElapsedInterval) clearInterval(saveElapsedInterval);
+        saveElapsedInterval = setInterval(() => {
+            saveElapsedTimeToServer();
+        }, 5000); // حفظ كل 5 ثواني
+    }
+
+    function saveElapsedTimeToServer() {
+        if (!attemptId || totalElapsedSeconds === null) return;
+
+        fetch(saveElapsedTimeUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                elapsed_seconds: totalElapsedSeconds
+            })
+        })
+        .then(res => res.json())
+        .then(json => {
+            if (!json.success) {
+                console.warn('Failed to save elapsed time', json);
+            }
+        })
+        .catch(err => console.error('Save elapsed time error', err));
     }
 
     function updateTimerDisplay() {
@@ -171,7 +210,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function handleTimeEnd() {
-        // عند انتهاء الوقت نُعلِم السيرفر ونسلم الاجابات
+        if (saveElapsedInterval) clearInterval(saveElapsedInterval);
+        // عند انتهاء الوقت نُعلِّم السيرفر ونسلم الاجابات
         // نضع قيمة auto_submit=1 ثم نرسل POST
         document.getElementById('auto_submit').value = '1';
 
@@ -245,11 +285,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // عند الضغط على زر التسليم نسمح بالتصرف العادي (الفورم سترسل)
-    // لكن للتأكد: إذا أردت إرسال عبر AJAX بدل الفرم العادي، يمكنك منع الافتراضي وإرسال Fetch ثم إعادة توجيه.
+    // لكن للتأكد: قبل إرسال نحفظ الوقت المنقضي
+    document.getElementById('submit-btn').addEventListener('click', function(e) {
+        saveElapsedTimeToServer();
+    });
 
     // منع الطالب من فتح الصفحة في لسانات متعددة وإظهار تحذير/تزامن غير مطلوب
     window.addEventListener('beforeunload', function (e) {
-        // يمكنك إرسال إشارة سريعة للسيرفر هنا إن رغبت
+        saveElapsedTimeToServer();
     });
 });
 </script>

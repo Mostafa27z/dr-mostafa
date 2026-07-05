@@ -125,7 +125,7 @@ Route::middleware(['auth', 'role:teacher', 'subscription'])->prefix('teacher')->
     ->name('assignments.deleteFile');
 });
 
-Route::middleware(['auth', 'role:teacher', 'subscription'])->prefix('teacher')->group(function () {
+Route::middleware(['auth', 'role:teacher', 'subscription'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/answers/{id}', [AssignmentAnswerController::class, 'show'])->name('answers.show');
     Route::put('/answers/{id}', [AssignmentAnswerController::class, 'update'])->name('answers.update');
 });
@@ -154,6 +154,7 @@ Route::middleware(['auth', 'role:teacher', 'subscription'])->prefix('teacher')->
     Route::post('/exams', [ExamController::class, 'store'])->name('exams.store');   // حفظ امتحان جديد
 
     Route::get('/exams/{id}', [ExamController::class, 'show'])->name('exams.show'); // عرض امتحان
+    Route::get('/exams/{exam_id}/results/{student_id}', [ExamController::class, 'studentResultDetails'])->name('exams.studentResultDetails');
     Route::get('/exams/{id}/edit', [ExamController::class, 'edit'])->name('exams.edit'); // تعديل امتحان
     Route::put('/exams/{id}', [ExamController::class, 'update'])->name('exams.update');  // تحديث امتحان
     Route::delete('/exams/{id}', [ExamController::class, 'destroy'])->name('exams.destroy'); // حذف امتحان
@@ -197,6 +198,9 @@ Route::post('/exams/{id}/save-answer', [ExamController::class, 'saveAnswerAjax']
 Route::post('/exams/{id}/auto-submit', [ExamController::class, 'autoSubmitAjax'])
     ->name('auto_submit');
 
+Route::post('/exams/{id}/save-elapsed-time', [ExamController::class, 'saveElapsedTime'])
+    ->name('save_elapsed_time');
+
 });
 
 
@@ -228,6 +232,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/courses', [StudentController::class, 'courses'])->name('courses');
     Route::get('/courses/{course}', [StudentController::class, 'showCourse'])->name('courses.show');
     Route::get('/courses/{course}/lessons/{lesson}', [StudentController::class, 'showLesson'])->name('lessons.show');
+    Route::get('/teachers', [StudentController::class, 'teachers'])->name('teachers');
 });
 Route::middleware(['auth'])->group(function () {
     Route::get('/lessons/{lesson}/video', [LessonController::class, 'streamVideo'])
@@ -261,8 +266,8 @@ Route::middleware(['auth', 'role:student'])
     ->prefix('student')
     ->name('student.chat.')
     ->group(function () {
-        Route::get('/chat', [ChatController::class, 'index'])->name('index');
-        Route::post('/chat/send', [ChatController::class, 'store'])->name('store');
+        Route::get('/chat/{teacher_id?}', [ChatController::class, 'index'])->name('index');
+        Route::post('/chat/send/{teacher_id}', [ChatController::class, 'store'])->name('store');
     });
 
 
